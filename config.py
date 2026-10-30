@@ -216,7 +216,7 @@ MUSIC_AUTOPLAY_MAX_CONSECUTIVE: int = _env_int("MUSIC_AUTOPLAY_MAX_CONSECUTIVE",
 MUSIC_AUTOPLAY_HISTORY: int = _env_int("MUSIC_AUTOPLAY_HISTORY", 25, minimum=1)
 
 # Cookie-extension listener (services/cookie_listener_service.py). ON by default and
-# API-compatible with music_bot_self's cookie server (port 8999), so the stock
+# API-compatible with the musicbot-cookie-sync extension (default port 8999), so the stock
 # extension works unmodified. Auth: if MUSIC_COOKIE_LISTENER_SECRET is set it is
 # required; if not, the request must come from a browser-extension Origin
 # (optionally limited to MUSIC_COOKIE_LISTENER_EXTENSION_IDS). A busy port never

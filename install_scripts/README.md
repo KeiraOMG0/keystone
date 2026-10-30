@@ -48,6 +48,7 @@ own), it will create `.env` from `.env.example` and stop, since it can't
 guess your Discord token/secrets for you. Open `.env`, fill in at least:
 
 ```
+GUILD_ID=
 DISCORD_TOKEN=
 INTERNAL_API_SECRET=
 DISCORD_CLIENT_ID=

@@ -1,11 +1,11 @@
 # Cookie extension listener
 
 The `Cookie Sync` browser extension ([musicbot-cookie-sync](https://github.com/KeiraOMG0/musicbot-cookie-sync), MIT, by Keira) keeps the music cog's
-`cookies.txt` fresh. kick-bot's side is `services/cookie_listener_service.py`, started and stopped
-by the music cog (`cog_load` / `cog_unload`). It is **on by default** and speaks the **same API as
-the selfbot's `cookie_server.py`**, so **the stock extension needs no edits**.
+`cookies.txt` fresh. The bot's side is `services/cookie_listener_service.py`, started and stopped
+by the music cog (`cog_load` / `cog_unload`). It is **on by default** and speaks the **extension's
+own API**, so **the extension needs no edits**.
 
-## API (identical to the selfbot)
+## API (the extension's protocol)
 
 - Default address `http://127.0.0.1:8999`.
 - `GET /needs-refresh` -> `200 {"needsRefresh": true|false}` (`application/json`).
@@ -13,7 +13,7 @@ the selfbot's `cookie_server.py`**, so **the stock extension needs no edits**.
   Errors are plain text: `400` (`empty cookies payload` / `bad request`), `500`
   (`failed to write cookies file`), `404` for other paths.
 - `OPTIONS` -> `204` with CORS headers.
-- Additive kick-bot behaviour: `X-Cookies-Accepted` / `X-Cookies-Rejected` response headers, and
+- Additions on the bot's side: `X-Cookies-Accepted` / `X-Cookies-Rejected` response headers, and
   extra refusal codes (`401` auth, `403` bad origin, `413` too large, `422` nothing acceptable,
   `429` rate limit) that the stock extension simply treats as a failed push.
 
@@ -53,21 +53,15 @@ the selfbot's `cookie_server.py`**, so **the stock extension needs no edits**.
 - It never blocks or crashes the bot: if the port cannot be bound it logs one warning and retries in
   the background (backoff up to 60 s) until the port frees.
 
-## Port sharing with the selfbot
+## Port conflicts
 
-kick-bot and `music_bot_self` cannot both bind 8999, and this is deliberately not worked around.
-While the selfbot's listener holds the port, kick-bot logs a warning and keeps retrying.
+Only one program can listen on a port. If something else already holds 8999 (for example another
+bot that uses the same extension), the listener logs a warning and keeps retrying in the background
+until the port frees; nothing else is affected.
 
-To switch the stock extension over to kick-bot, with no extension edits:
-
-1. Stop the selfbot's cookie listener (stop that bot, or remove its `cookie_server.start()` call).
-2. Restart kick-bot. Within a minute its retry binds `127.0.0.1:8999`; the log shows
-   `Cookie listener started ... auth mode: no secret set: ...`.
-3. The extension keeps polling `http://127.0.0.1:8999`, so nothing else changes.
-
-To run both bots at once, give one of them a different port (`MUSIC_COOKIE_LISTENER_PORT=8977` for
-kick-bot) and point a second copy of the extension at it (options page, "Server origin"). The
-extension talks to one server at a time.
+To run two such programs at once, give this bot a different port (`MUSIC_COOKIE_LISTENER_PORT=8977`)
+and point a second copy of the extension at it (options page, "Server origin"). The extension talks
+to one server at a time.
 
 ## Configuration
 
@@ -77,18 +71,17 @@ All optional; see `.env.example`: `MUSIC_COOKIE_LISTENER_ENABLED` (default `true
 
 ## Optional: secret (hardening only)
 
-Only if you set `MUSIC_COOKIE_LISTENER_SECRET`, edit your copy of the extension to send it. kick-bot
-never edits `music_bot_self`. In `background.js` add `secret: ""` to `DEFAULTS`, read it in
+Only if you set `MUSIC_COOKIE_LISTENER_SECRET`, edit your copy of the extension to send it. In `background.js` add `secret: ""` to `DEFAULTS`, read it in
 `pollAndSync`, build `const auth = secret ? { "X-Cookie-Secret": secret } : {};` and pass
 `{ headers: auth }` to the `/needs-refresh` fetch and `headers: { "Content-Type": "text/plain", ...auth }`
 to the `/cookies` POST. Add a password input `id="secret"` to `options.html` and load/save it in
 `options.js` alongside `serverOrigin` and `cookieDomain`. Leave the secret unset if you use the
-stock extension.
+extension unmodified.
 
 ## Troubleshooting
 
 - `401` (POST only): secret mode and the header is missing/wrong, or no-secret mode and the POST had no
   extension `Origin`. `403`: the `Origin` is a web page or not in `_EXTENSION_IDS`.
 - `422`: the pushed cookies contained nothing for the allowed domains. `429`: over the rate limit.
-- "could not bind": another process (probably the selfbot) holds the port; see above.
+- "could not bind": another process holds the port; see "Port conflicts".
 - `last_error` (staff `!musicstatus`) holds a short reason, never cookie contents.

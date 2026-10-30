@@ -15,7 +15,7 @@ os.environ.setdefault("INTERNAL_API_SECRET", "test-secret")
 from cogs import music  # noqa: E402
 from cogs.music import MusicCog, build_music_status, sanitize_status_text  # noqa: E402
 
-SECRET_PATH = r"C:\Users\Keira\Desktop\python\kick-bot\cookies.txt"
+SECRET_PATH = r"C:\Users\Example\Desktop\keystone\cookies.txt"
 STATUS = {
     "enabled": True,
     "state": "running",
@@ -28,7 +28,7 @@ STATUS = {
     "watchdog": True,
     "watchdog_active": True,
     "last_error": rf"script not found at {SECRET_PATH} token=abc123 /home/bot/pot_server/main.js",
-    "log_path": r"C:\Users\Keira\Desktop\python\kick-bot\logs\pot_server.log",
+    "log_path": r"C:\Users\Example\Desktop\keystone\logs\pot_server.log",
     "log_tail": [
         rf"error reading {SECRET_PATH}",
         "Authorization: Bearer supersecretvalue",
@@ -42,7 +42,7 @@ STATUS = {
 
 
 def _no_leaks(text: str) -> None:
-    for bad in ("C:\\", "Users", "Keira", "/home/", "abc123", "supersecretvalue", "4242", "127.0.0.1", "4416"):
+    for bad in ("C:\\", "Users", "Example", "/home/", "abc123", "supersecretvalue", "4242", "127.0.0.1", "4416"):
         assert bad not in text, f"leaked {bad!r}"
 
 
@@ -71,7 +71,7 @@ def test_staff_view_is_still_sanitised():
     text = build_music_status(STATUS, staff=True, log_lines=5)
     assert "Staff details" in text and "Log tail (pot_server.log)" in text
     assert "pid: `4242`" in text and "127.0.0.1:4416" in text  # staff may see these
-    for bad in ("C:\\", "Users", "Keira", "/home/", "abc123", "supersecretvalue"):
+    for bad in ("C:\\", "Users", "Example", "/home/", "abc123", "supersecretvalue"):
         assert bad not in text
     assert "cookies.txt" in text and "[redacted]" in text
     assert "@everyone" not in text

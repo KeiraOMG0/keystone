@@ -1,6 +1,6 @@
 # Kick-Bot Dashboard: Design System and Redesign Spec
 
-**Mockups (Claude Design canvas, private):** https://claude.ai/artifact/1DVsN79GGy6DZmAavFCTzJ
+**Mockups:** kept privately (not part of the repository).
 24 live artboards: shell + Overview (light/dark), navigation and permission gating, Moderation (light/dark), Tickets list and detail, Honeypot (configured light/dark, first-run setup, stats dialog), Diagnostics, Template editor, Settings, Permissions, public Appeal (desktop and phone), phone shell and drawer, Login/403, loading/empty/error/offline states, components and tokens (light/dark). The artboards use a scratch stylesheet (`kb.css`) that mirrors the tokens below. Where the mockup and this file disagree, this file is the spec.
 
 **Audience:** the engineer implementing the redesign in `server/frontend` (React 19, TypeScript, Tailwind v4, shadcn/ui on the `radix-ui` package, Recharts, TanStack Query).

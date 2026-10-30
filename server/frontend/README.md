@@ -1,6 +1,6 @@
 # Dashboard frontend
 
-React 19 + TypeScript + Vite 8 + Tailwind v4 + Radix/shadcn UI + `@tanstack/react-query` + Recharts. This is the UI for the kick-bot moderation dashboard (`dash.idlesys.xyz`). It is a pure REST client: every request is a same-origin `fetch` to `/api/*` with cookies, answered by the dashboard backend in `server/` (which proxies to the bot's internal API). No WebSockets and no JWTs; auth state comes from one `GET /api/me` call.
+React 19 + TypeScript + Vite 8 + Tailwind v4 + Radix/shadcn UI + `@tanstack/react-query` + Recharts. This is the UI for the Keystone (formerly kick-bot) staff dashboard. Every request is a same-origin `fetch` to `/api/*` with cookies, answered by the dashboard backend in `server/` (which proxies to the bot's internal API). Live updates come over one same-origin WebSocket (`/api/ws`, ARCHITECTURE section 22). No JWTs; auth state comes from `GET /api/me`.
 
 Full system documentation: [`../../docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) (section 9 for routes and pages).
 

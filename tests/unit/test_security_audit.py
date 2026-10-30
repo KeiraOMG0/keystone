@@ -1,4 +1,4 @@
-"""Security audit regression tests (2026-10-30, docs/SECURITY_AUDIT.md).
+"""Security audit regression tests (2026-10-30; the full audit report is kept privately).
 
 These assert the security POLICY, so they fail when a boundary breaks:
 

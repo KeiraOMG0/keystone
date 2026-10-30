@@ -53,7 +53,7 @@ def test_cmdline_masks_token_shapes_and_opaque_blobs():
 
 
 def test_cmdline_shows_full_paths_including_cookie_file():
-    p = r"C:\Users\Keira\Desktop\python\kick-bot\cookies.txt"
+    p = r"C:\Users\Example\Desktop\keystone\cookies.txt"
     out = ds.redact_cmdline(["yt-dlp", "--cookies", p, r"C:\node\node.exe"])
     assert p in out and r"C:\node\node.exe" in out  # staff-only page: paths are shown
 

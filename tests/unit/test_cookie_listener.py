@@ -175,7 +175,7 @@ async def test_accepts_youtube_cookies_and_drops_others(svc):
     status, headers, text = await req(
         "POST", url(svc, "/cookies"), headers=H, data=body(line(), line("evil.com", name="X"))
     )
-    assert status == 200 and text == "ok"  # same body as the selfbot
+    assert status == 200 and text == "ok"  # the body the extension expects
     assert headers["X-Cookies-Accepted"] == "1" and headers["X-Cookies-Rejected"] == "1"
     content = open(svc.cookies_path, encoding="utf-8").read()
     assert content.startswith("# Netscape HTTP Cookie File") and "evil.com" not in content and VALUE in content
@@ -320,10 +320,10 @@ async def test_preflight_works_without_secret(open_svc):
     assert status == 204 and headers["Access-Control-Allow-Origin"] == EXT
 
 
-# -- API shape parity with music_bot_self/cookie_server.py -----------------------
+# -- API shape the musicbot-cookie-sync extension expects --------------------------
 
 
-async def test_api_parity_with_selfbot(open_svc):
+async def test_api_matches_extension_contract(open_svc):
     h = {"Origin": EXT}
     status, headers, text = await req("GET", url(open_svc, "/needs-refresh"), headers=h)
     assert status == 200 and headers["Content-Type"].startswith("application/json")
@@ -339,7 +339,7 @@ async def test_api_parity_with_selfbot(open_svc):
     assert "Content-Type" in headers["Access-Control-Allow-Headers"]
 
 
-def test_defaults_match_selfbot(monkeypatch):
+def test_defaults_match_extension(monkeypatch):
     import config
 
     assert config._env_port("UNSET_PORT_VAR_FOR_TEST", 8999) == 8999
@@ -370,7 +370,7 @@ async def test_port_in_use_warns_and_retries_in_background(tmp_path, caplog, mon
         await s.start_background()  # must not raise
         assert not s.running and s.bind_pending
         warnings = [r for r in caplog.records if r.levelno == logging.WARNING and "could not bind" in r.getMessage()]
-        assert len(warnings) == 1 and "selfbot" in warnings[0].getMessage()
+        assert len(warnings) == 1 and "Another process may hold the port" in warnings[0].getMessage()
         await real_sleep(0.3)
         assert not s.running  # still blocked, still retrying quietly
         assert len([r for r in caplog.records if "could not bind" in r.getMessage()]) == 1

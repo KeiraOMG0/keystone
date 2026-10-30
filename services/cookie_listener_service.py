@@ -8,7 +8,7 @@ the yt-dlp cookies file so playback keeps working when cookies rotate.
 
 It opens a network listener, so it is locked down:
 - loopback bind by default; disabled unless explicitly enabled
-- same wire API as music_bot_self's cookie_server.py (GET /needs-refresh,
+- the musicbot-cookie-sync extension's wire API (GET /needs-refresh,
   POST /cookies, default port 8999) so the stock extension works unmodified
 - auth: if MUSIC_COOKIE_LISTENER_SECRET is set it is REQUIRED (``X-Cookie-Secret``,
   constant-time compare). If not set, the request must carry an ``Origin`` that is
@@ -278,7 +278,7 @@ class CookieListenerService:
         except OSError as e:
             log.warning(
                 "Cookie listener could not bind %s:%s (%s). Another process may hold the port "
-                "(the music_bot_self selfbot's cookie server uses 8999). Music keeps working; "
+                "(8999 is the cookie extension's default port). Music keeps working; "
                 "will retry in the background.",
                 self.host, self.port, type(e).__name__,
             )
@@ -407,7 +407,7 @@ class CookieListenerService:
         return False
 
     def _text(self, request: web.Request, status: int, text: str = "", extra: Optional[dict] = None) -> web.Response:
-        """Plain-text reply, like the selfbot's server (which sends text/plain bodies)."""
+        """Plain-text reply, as the extension expects (text/plain bodies)."""
         headers = {**self._cors(request), **(extra or {})}
         return web.Response(status=status, body=text.encode(), content_type="text/plain", headers=headers)
 
@@ -464,7 +464,7 @@ class CookieListenerService:
         self.last_poll_at = self._clock()
         if first:
             log.info("Cookie extension connected (first poll received)")
-        # Identical to the selfbot: {"needsRefresh": <bool>} as application/json.
+        # The extension's contract: {"needsRefresh": <bool>} as application/json.
         return web.Response(
             status=200,
             body=json.dumps({"needsRefresh": self._needs_refresh}).encode(),
@@ -515,7 +515,7 @@ class CookieListenerService:
             "Cookies refreshed at %s: %d accepted, %d rejected",
             time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.last_update_at)), accepted, rejected,
         )
-        # Selfbot answers "ok"; counts ride along as additive headers.
+        # The extension expects "ok"; counts ride along as additive headers.
         return self._text(
             request, 200, "ok",
             {"X-Cookies-Accepted": str(accepted), "X-Cookies-Rejected": str(rejected)},
