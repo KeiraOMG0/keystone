@@ -1,0 +1,1276 @@
+{
+ "status": 200,
+ "data": {
+  "hash": "f2b0674d4f6a133e",
+  "date": "2026-10-13T00:00:00Z",
+  "vbuckIcon": "https://fortnite-api.com/images/vbuck.png",
+  "entries": [
+   {
+    "regularPrice": 2100,
+    "finalPrice": 1500,
+    "devName": "[VIRTUAL]1 x Metalhead Meow Skulls, 1 x KATS Turntable, 1 x Screamo Boombox, 1 x Tour List for -1 MtxCurrency",
+    "offerId": "v2:/89e1f5c62590baeab26ea0a207b6c64b006e8ae5f86b7b254889c2c9ed662ea5",
+    "inDate": "2026-10-11T00:00:00Z",
+    "outDate": "2026-10-13T23:59:59.999Z",
+    "bundle": {
+     "name": "KATS Island Tour Bundle",
+     "info": "Bundle",
+     "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/bb78abdc6bddf5d0/renderimage_0.png"
+    },
+    "banner": {
+     "value": "600 V-Bucks Off",
+     "intensity": "Low",
+     "backendValue": "AmountOff"
+    },
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -1,
+    "layoutId": "FND101326.98",
+    "layout": {
+     "id": "FND101326",
+     "name": "Showcase ",
+     "index": 10,
+     "rank": 183,
+     "showIneligibleOffers": "always",
+     "useWidePreview": false,
+     "displayType": "tileGrid"
+    },
+    "colors": {
+     "color1": "51e5ffff",
+     "color2": "0b81b3ff",
+     "color3": "2eb3d9ff",
+     "textBackgroundColor": "006989ff"
+    },
+    "tileSize": "Size_2_x_1",
+    "displayAssetPath": "/OfferCatalog/DisplayAssets/DA_Featured_Gothclaws_Bundle",
+    "newDisplayAssetPath": "/OfferCatalog/NewDisplayAssets/S41/DAv2_Bundle_Featured_Gothclaws",
+    "newDisplayAsset": {
+     "id": "DAv2_Bundle_Featured_GothClaws",
+     "materialInstances": [],
+     "renderImages": [
+      {
+       "productTag": "Product.BR",
+       "fileName": "cosmo__bb78abdc6bddf5d0_9f0857767dd44c2f.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/bb78abdc6bddf5d0/renderimage_0.png"
+      },
+      {
+       "productTag": "Product.Juno",
+       "fileName": "cosmo__bb78abdc6bddf5d0_185510d2337fa330.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/bb78abdc6bddf5d0/renderimage_1.png"
+      }
+     ]
+    },
+    "brItems": [
+     {
+      "id": "Character_GothClaws",
+      "name": "Metalhead Meow Skulls",
+      "description": "Never miss a tour stop.",
+      "type": {
+       "value": "outfit",
+       "displayValue": "Outfit",
+       "backendValue": "AthenaCharacter"
+      },
+      "rarity": {
+       "value": "epic",
+       "displayValue": "Epic",
+       "backendValue": "EFortRarity::Epic"
+      },
+      "set": {
+       "value": "KATS Island Tour",
+       "text": "Part of the KATS Island Tour set.",
+       "backendValue": "BowText"
+      },
+      "introduction": {
+       "chapter": "7",
+       "season": "3",
+       "text": "Introduced in Chapter 7, Season 3.",
+       "backendValue": 41
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/character_gothclaws/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/character_gothclaws/icon.png",
+       "featured": "https://fortnite-api.com/images/cosmetics/br/character_gothclaws/featured.png",
+       "lego": {
+        "small": "https://fortnite-api.com/images/cosmetics/lego/character_gothclaws/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/lego/character_gothclaws/large.png",
+        "wide": "https://fortnite-api.com/images/cosmetics/lego/character_gothclaws/wide.png"
+       }
+      },
+      "showcaseVideo": "VO-1UZ2AlR4",
+      "added": "2026-07-16T08:32:04Z"
+     },
+     {
+      "id": "Backpack_GothClaws",
+      "name": "KATS Turntable",
+      "description": "Play the hits on the go.",
+      "type": {
+       "value": "backpack",
+       "displayValue": "Back Bling",
+       "backendValue": "AthenaBackpack"
+      },
+      "rarity": {
+       "value": "rare",
+       "displayValue": "Rare",
+       "backendValue": "EFortRarity::Rare"
+      },
+      "set": {
+       "value": "KATS Island Tour",
+       "text": "Part of the KATS Island Tour set.",
+       "backendValue": "BowText"
+      },
+      "introduction": {
+       "chapter": "7",
+       "season": "3",
+       "text": "Introduced in Chapter 7, Season 3.",
+       "backendValue": 41
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/backpack_gothclaws/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/backpack_gothclaws/icon.png",
+       "featured": "https://fortnite-api.com/images/cosmetics/br/backpack_gothclaws/featured.png"
+      },
+      "added": "2026-07-16T08:32:04Z"
+     },
+     {
+      "id": "EID_GothClaws",
+      "name": "Screamo Boombox",
+      "description": "Feel the beat in your Skulls.",
+      "type": {
+       "value": "emote",
+       "displayValue": "Emote",
+       "backendValue": "AthenaDance"
+      },
+      "rarity": {
+       "value": "uncommon",
+       "displayValue": "Uncommon",
+       "backendValue": "EFortRarity::Uncommon"
+      },
+      "set": {
+       "value": "KATS Island Tour",
+       "text": "Part of the KATS Island Tour set.",
+       "backendValue": "BowText"
+      },
+      "introduction": {
+       "chapter": "7",
+       "season": "3",
+       "text": "Introduced in Chapter 7, Season 3.",
+       "backendValue": 41
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/eid_gothclaws/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/eid_gothclaws/icon.png"
+      },
+      "showcaseVideo": "PRSTnp8UHwc",
+      "added": "2026-07-16T08:32:04Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 1200,
+    "finalPrice": 1200,
+    "devName": "[VIRTUAL]1 x Hattie Chirps, 1 x Sasclash Stuffie for -1 MtxCurrency",
+    "offerId": "v2:/bed97f15b29fde8dbda1d461110f440f46c8aff4a47d13bbba640b1ee344c4de",
+    "inDate": "2026-10-13T00:00:00Z",
+    "outDate": "2026-10-13T23:59:59.999Z",
+    "bundle": {
+     "name": "Hattie Chirps",
+     "info": "Bundle",
+     "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a5b8765eac5ea6af/renderimage_0.png"
+    },
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -5,
+    "layoutId": "BR101326.97",
+    "layout": {
+     "id": "BR101326",
+     "name": "Loadout Goals ",
+     "index": 29,
+     "rank": 184,
+     "showIneligibleOffers": "always",
+     "useWidePreview": false,
+     "displayType": "tileGrid"
+    },
+    "colors": {
+     "color1": "888de6ff",
+     "color2": "00adffff",
+     "color3": "00c2a4ff",
+     "textBackgroundColor": "00adffff"
+    },
+    "tileBackgroundMaterial": "ShopTile_Water",
+    "tileSize": "Size_1_x_1",
+    "displayAssetPath": "/OfferCatalog/DisplayAssets/DA_Character_RinkHat_Trick",
+    "newDisplayAssetPath": "/OfferCatalog/NewDisplayAssets/S39/DAv2_Character_RinkHat_Trick",
+    "newDisplayAsset": {
+     "id": "DAv2_Character_RinkHat_Trick",
+     "materialInstances": [],
+     "renderImages": [
+      {
+       "productTag": "Product.BR",
+       "fileName": "cosmo__a5b8765eac5ea6af_1fc121046029ec53.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a5b8765eac5ea6af/renderimage_0.png"
+      },
+      {
+       "productTag": "Product.Juno",
+       "fileName": "cosmo__a5b8765eac5ea6af_3af39c7294c9a003.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a5b8765eac5ea6af/renderimage_1.png"
+      }
+     ]
+    },
+    "brItems": [
+     {
+      "id": "Character_RinkHat_Trick",
+      "name": "Hattie Chirps",
+      "description": "Don't mess with number 11.",
+      "type": {
+       "value": "outfit",
+       "displayValue": "Outfit",
+       "backendValue": "AthenaCharacter"
+      },
+      "rarity": {
+       "value": "epic",
+       "displayValue": "Epic",
+       "backendValue": "EFortRarity::Epic"
+      },
+      "set": {
+       "value": "Sasclasher",
+       "text": "Part of the Sasclasher set.",
+       "backendValue": "CombatCloth"
+      },
+      "introduction": {
+       "chapter": "7",
+       "season": "1",
+       "text": "Introduced in Chapter 7, Season 1.",
+       "backendValue": 39
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/character_rinkhat_trick/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/character_rinkhat_trick/icon.png",
+       "featured": "https://fortnite-api.com/images/cosmetics/br/character_rinkhat_trick/featured.png",
+       "lego": {
+        "small": "https://fortnite-api.com/images/cosmetics/lego/character_rinkhat_trick/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/lego/character_rinkhat_trick/large.png",
+        "wide": "https://fortnite-api.com/images/cosmetics/lego/character_rinkhat_trick/wide.png"
+       },
+       "bean": {
+        "small": "https://fortnite-api.com/images/cosmetics/beans/bean_rinkhat_trick/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/beans/bean_rinkhat_trick/large.png"
+       }
+      },
+      "metaTags": [
+       "Cosmetics.Emote.CharacterGroup.SkateLift"
+      ],
+      "added": "2026-02-05T15:01:36Z"
+     },
+     {
+      "id": "Backpack_RinkHat",
+      "name": "Sasclash Stuffie",
+      "description": "Ready for the cellie.",
+      "type": {
+       "value": "backpack",
+       "displayValue": "Back Bling",
+       "backendValue": "AthenaBackpack"
+      },
+      "rarity": {
+       "value": "rare",
+       "displayValue": "Rare",
+       "backendValue": "EFortRarity::Rare"
+      },
+      "set": {
+       "value": "Sasclasher",
+       "text": "Part of the Sasclasher set.",
+       "backendValue": "CombatCloth"
+      },
+      "introduction": {
+       "chapter": "7",
+       "season": "1",
+       "text": "Introduced in Chapter 7, Season 1.",
+       "backendValue": 39
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/backpack_rinkhat/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/backpack_rinkhat/icon.png",
+       "featured": "https://fortnite-api.com/images/cosmetics/br/backpack_rinkhat/featured.png"
+      },
+      "added": "2026-02-05T15:01:36Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 800,
+    "finalPrice": 800,
+    "devName": "[VIRTUAL]1 x The Knight's Nail for 800 MtxCurrency",
+    "offerId": "v2:/79a867babe85affe50d59793e16943f4b5297af0df8a4c55185656a3c38212b3",
+    "inDate": "2026-10-08T00:00:00Z",
+    "outDate": "2026-10-14T23:59:59.999Z",
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -2,
+    "layoutId": "HollowKnight.98",
+    "layout": {
+     "id": "HollowKnight",
+     "name": "Hollow Knight ",
+     "category": "Fortnitemares",
+     "index": 12,
+     "rank": 192,
+     "showIneligibleOffers": "always",
+     "useWidePreview": false,
+     "displayType": "tileGrid"
+    },
+    "colors": {
+     "color1": "71001bff",
+     "color3": "a6106aff",
+     "textBackgroundColor": "1a0014ff"
+    },
+    "tileBackgroundMaterial": "ShopTile_FNMares26",
+    "tileSize": "Size_1_x_1",
+    "newDisplayAssetPath": "/OfferCatalog/NewDisplayAssets/S42/DAv2_pickaxe_pinkysight",
+    "newDisplayAsset": {
+     "id": "DAv2_Pickaxe_PinkySight",
+     "cosmeticId": "Pickaxe_PinkySight",
+     "materialInstances": [],
+     "renderImages": [
+      {
+       "productTag": "Product.BR",
+       "fileName": "cosmo__af2e5ae69ebbc5b6_29c0c4191e61fb71.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/af2e5ae69ebbc5b6/renderimage_0.png"
+      },
+      {
+       "productTag": "Product.BR",
+       "fileName": "cosmo__af2e5ae69ebbc5b6_d2e71b6320aa32c2.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/af2e5ae69ebbc5b6/renderimage_1.png"
+      }
+     ]
+    },
+    "brItems": [
+     {
+      "id": "Pickaxe_PinkySight",
+      "name": "The Knight's Nail",
+      "description": "A traditional weapon of Hallownest.",
+      "type": {
+       "value": "pickaxe",
+       "displayValue": "Pickaxe",
+       "backendValue": "AthenaPickaxe"
+      },
+      "rarity": {
+       "value": "gaminglegends",
+       "displayValue": "Gaming Legends Series",
+       "backendValue": "EFortRarity::Rare"
+      },
+      "series": {
+       "value": "Gaming Legends Series",
+       "colors": [
+        "8078ffff",
+        "5328d6ff",
+        "3e1398ff",
+        "28085fff",
+        "0d0027ff"
+       ],
+       "backendValue": "PlatformSeries"
+      },
+      "set": {
+       "value": "Hollow Knight",
+       "text": "Part of the Hollow Knight set.",
+       "backendValue": "DizzyScout"
+      },
+      "introduction": {
+       "chapter": "7",
+       "season": "4",
+       "text": "Introduced in Chapter 7, Season 4.",
+       "backendValue": 42
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/pickaxe_pinkysight/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/pickaxe_pinkysight/icon.png",
+       "featured": "https://fortnite-api.com/images/cosmetics/br/pickaxe_pinkysight/featured.png"
+      },
+      "variants": [
+       {
+        "channel": "Mesh",
+        "type": "Style",
+        "options": [
+         {
+          "tag": "Stage1",
+          "name": "The Knight's Nail",
+          "image": "https://fortnite-api.com/images/cosmetics/br/pickaxe_pinkysight/variants/mesh/stage1.png"
+         },
+         {
+          "tag": "Stage2",
+          "name": "Pure Nail",
+          "image": "https://fortnite-api.com/images/cosmetics/br/pickaxe_pinkysight/variants/mesh/stage2.png"
+         }
+        ]
+       }
+      ],
+      "dynamicPakId": "1009",
+      "added": "2026-10-06T13:00:45Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 500,
+    "finalPrice": 500,
+    "devName": "[VIRTUAL]1 x The Fazbear Band for 500 MtxCurrency",
+    "offerId": "v2:/2c6965bdff112596afd93f2de1626cedb37b594f53e09487fac1e7a82d9bef69",
+    "inDate": "2026-10-01T00:00:00Z",
+    "outDate": "2026-10-31T23:59:59.999Z",
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -3,
+    "layoutId": "5Nights.98",
+    "layout": {
+     "id": "5Nights",
+     "name": "Five Nights at Freddy's",
+     "category": "Fortnitemares",
+     "index": 6,
+     "rank": 193,
+     "showIneligibleOffers": "always",
+     "useWidePreview": false,
+     "displayType": "tileGrid"
+    },
+    "colors": {
+     "color1": "441548ff",
+     "color3": "c745d5ff",
+     "textBackgroundColor": "1a0014ff"
+    },
+    "tileBackgroundMaterial": "ShopTile_FNMares26_Static",
+    "tileSize": "Size_1_x_1",
+    "newDisplayAssetPath": "/OfferCatalog/NewDisplayAssets/S42/DAv2_eid_guardhence",
+    "newDisplayAsset": {
+     "id": "DAv2_EID_GuardHence",
+     "cosmeticId": "EID_GuardHence_Joiner1",
+     "materialInstances": [],
+     "renderImages": [
+      {
+       "productTag": "Product.BR",
+       "fileName": "cosmo__7f530ae5ba41ef3c_29c0c4191e61fb71.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/7f530ae5ba41ef3c/renderimage_0.png"
+      }
+     ]
+    },
+    "brItems": [
+     {
+      "id": "EID_GuardHence",
+      "name": "The Fazbear Band",
+      "description": "The last concert you'll ever see.",
+      "type": {
+       "value": "emote",
+       "displayValue": "Emote",
+       "backendValue": "AthenaDance"
+      },
+      "rarity": {
+       "value": "gaminglegends",
+       "displayValue": "Gaming Legends Series",
+       "backendValue": "EFortRarity::Uncommon"
+      },
+      "series": {
+       "value": "Gaming Legends Series",
+       "colors": [
+        "8078ffff",
+        "5328d6ff",
+        "3e1398ff",
+        "28085fff",
+        "0d0027ff"
+       ],
+       "backendValue": "PlatformSeries"
+      },
+      "set": {
+       "value": "Five Nights at Freddy's",
+       "text": "Part of the Five Nights at Freddy's set.",
+       "backendValue": "GracefulBadger"
+      },
+      "introduction": {
+       "chapter": "7",
+       "season": "4",
+       "text": "Introduced in Chapter 7, Season 4.",
+       "backendValue": 42
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/eid_guardhence/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/eid_guardhence/icon.png"
+      },
+      "showcaseVideo": "KsMTlhifEfo",
+      "dynamicPakId": "1013",
+      "added": "2026-10-01T08:00:00Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 800,
+    "finalPrice": 800,
+    "devName": "[VIRTUAL]1 x Bonnie's Blazin' Guitar, 1 x Bonnie's Blazin' Guitar, 1 x Bonnie's Blazin' Guitar for 800 MtxCurrency",
+    "offerId": "v2:/25672d94feefe857a6769a931258f100d5808a973a7130300d9fbff07ffe314a",
+    "inDate": "2026-10-01T00:00:00Z",
+    "outDate": "2026-10-31T23:59:59.999Z",
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -4,
+    "layoutId": "5Nights.95",
+    "layout": {
+     "id": "5Nights",
+     "name": "Five Nights at Freddy's",
+     "category": "Fortnitemares",
+     "index": 6,
+     "rank": 193,
+     "showIneligibleOffers": "always",
+     "useWidePreview": false,
+     "displayType": "tileGrid"
+    },
+    "colors": {
+     "color1": "441548ff",
+     "color3": "c745d5ff",
+     "textBackgroundColor": "1a0014ff"
+    },
+    "tileBackgroundMaterial": "ShopTile_FNMares26_Static",
+    "tileSize": "Size_1_x_1",
+    "newDisplayAssetPath": "/OfferCatalog/NewDisplayAssets/S42/DAv2_Sparks_TearErrand_Bass",
+    "newDisplayAsset": {
+     "id": "DAv2_Sparks_TearErrand_Bass",
+     "materialInstances": [],
+     "renderImages": [
+      {
+       "productTag": "Product.BR",
+       "fileName": "cosmo__3848cfe013ab3004_29c0c4191e61fb71.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/3848cfe013ab3004/renderimage_0.png"
+      }
+     ]
+    },
+    "brItems": [
+     {
+      "id": "Backpack_TearErrand_Bass",
+      "name": "Bonnie's Blazin' Guitar",
+      "description": "It's hare-raisin'!",
+      "type": {
+       "value": "backpack",
+       "displayValue": "Back Bling",
+       "backendValue": "AthenaBackpack"
+      },
+      "rarity": {
+       "value": "rare",
+       "displayValue": "Rare",
+       "backendValue": "EFortRarity::Rare"
+      },
+      "set": {
+       "value": "Five Nights at Freddy's",
+       "text": "Part of the Five Nights at Freddy's set.",
+       "backendValue": "GracefulBadger"
+      },
+      "introduction": {
+       "chapter": "7",
+       "season": "4",
+       "text": "Introduced in Chapter 7, Season 4.",
+       "backendValue": 42
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/backpack_tearerrand_bass/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/backpack_tearerrand_bass/icon.png",
+       "featured": "https://fortnite-api.com/images/cosmetics/br/backpack_tearerrand_bass/featured.png"
+      },
+      "dynamicPakId": "1013",
+      "added": "2026-10-01T08:00:00Z"
+     },
+     {
+      "id": "Pickaxe_TearErrand_Bass",
+      "name": "Bonnie's Blazin' Guitar",
+      "description": "It's hare-raisin'!",
+      "type": {
+       "value": "pickaxe",
+       "displayValue": "Pickaxe",
+       "backendValue": "AthenaPickaxe"
+      },
+      "rarity": {
+       "value": "rare",
+       "displayValue": "Rare",
+       "backendValue": "EFortRarity::Rare"
+      },
+      "set": {
+       "value": "Five Nights at Freddy's",
+       "text": "Part of the Five Nights at Freddy's set.",
+       "backendValue": "GracefulBadger"
+      },
+      "introduction": {
+       "chapter": "7",
+       "season": "4",
+       "text": "Introduced in Chapter 7, Season 4.",
+       "backendValue": 42
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/pickaxe_tearerrand_bass/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/pickaxe_tearerrand_bass/icon.png",
+       "featured": "https://fortnite-api.com/images/cosmetics/br/pickaxe_tearerrand_bass/featured.png"
+      },
+      "dynamicPakId": "1013",
+      "added": "2026-10-01T08:00:00Z"
+     }
+    ],
+    "instruments": [
+     {
+      "id": "Sparks_TearErrand_Bass",
+      "name": "Bonnie's Blazin' Guitar",
+      "description": "It's hare-raisin'!",
+      "type": {
+       "value": "bass",
+       "displayValue": "Bass",
+       "backendValue": "SparksBass"
+      },
+      "rarity": {
+       "value": "common",
+       "displayValue": "Common",
+       "backendValue": "EFortRarity::Common"
+      },
+      "images": {
+       "small": "https://fortnite-api.com/images/cosmetics/instruments/sparks_tearerrand_bass/small.png",
+       "large": "https://fortnite-api.com/images/cosmetics/instruments/sparks_tearerrand_bass/large.png"
+      },
+      "added": "2026-10-01T08:00:00Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 300,
+    "finalPrice": 300,
+    "devName": "[VIRTUAL]1 x Asta's Devil Wings for 300 MtxCurrency",
+    "offerId": "v2:/bc1ec8be3823d847c8696f0585696117910033e498f9c34561ad0f51bcf04763",
+    "inDate": "2026-10-04T00:00:00Z",
+    "outDate": "2026-10-13T23:59:59.999Z",
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -1,
+    "layoutId": "BlackClover2.97",
+    "layout": {
+     "id": "BlackClover2",
+     "name": "Black Clover ",
+     "category": "Fortnitemares",
+     "index": 1,
+     "rank": 190,
+     "showIneligibleOffers": "always",
+     "useWidePreview": false,
+     "displayType": "tileGrid"
+    },
+    "colors": {
+     "color1": "47205cff",
+     "color3": "642b5fff",
+     "textBackgroundColor": "1a0014ff"
+    },
+    "tileBackgroundMaterial": "ShopTile_FNMares26_CRT",
+    "tileSize": "Size_1_x_1",
+    "newDisplayAssetPath": "/OfferCatalog/NewDisplayAssets/S42/DAv2_backpack_mimicgleanideal",
+    "newDisplayAsset": {
+     "id": "DAv2_Backpack_MimicGleanIdeal",
+     "cosmeticId": "Backpack_MimicGleanIdeal",
+     "materialInstances": [],
+     "renderImages": [
+      {
+       "productTag": "Product.BR",
+       "fileName": "cosmo__004e0d0362581eb8_29c0c4191e61fb71.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/004e0d0362581eb8/renderimage_0.png"
+      }
+     ]
+    },
+    "brItems": [
+     {
+      "id": "Backpack_MimicGleanIdeal",
+      "name": "Asta's Devil Wings",
+      "description": "Cut through the sky.",
+      "type": {
+       "value": "backpack",
+       "displayValue": "Back Bling",
+       "backendValue": "AthenaBackpack"
+      },
+      "rarity": {
+       "value": "rare",
+       "displayValue": "Rare",
+       "backendValue": "EFortRarity::Rare"
+      },
+      "set": {
+       "value": "Black Clover",
+       "text": "Part of the Black Clover set.",
+       "backendValue": "JollyGeyser"
+      },
+      "introduction": {
+       "chapter": "7",
+       "season": "4",
+       "text": "Introduced in Chapter 7, Season 4.",
+       "backendValue": 42
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/backpack_mimicgleanideal/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/backpack_mimicgleanideal/icon.png",
+       "featured": "https://fortnite-api.com/images/cosmetics/br/backpack_mimicgleanideal/featured.png"
+      },
+      "dynamicPakId": "1017",
+      "added": "2026-10-03T13:00:46Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 1200,
+    "finalPrice": 1200,
+    "devName": "[VIRTUAL]1 x Midnight Ops for 1200 MtxCurrency",
+    "offerId": "v2:/b457d908ea04d473dfc90c7fe785ed8c68fc4e0846ae0cdfbf728153af51d249",
+    "inDate": "2026-10-13T00:00:00Z",
+    "outDate": "2026-10-19T23:59:59.999Z",
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -3,
+    "layoutId": "NoSweat101326.99",
+    "layout": {
+     "id": "NoSweat101326",
+     "name": "No Sweat",
+     "index": 27,
+     "rank": 185,
+     "showIneligibleOffers": "always",
+     "useWidePreview": false,
+     "displayType": "tileGrid"
+    },
+    "colors": {
+     "color1": "75380aff",
+     "color3": "f3d513ff",
+     "textBackgroundColor": "75380aff"
+    },
+    "tileSize": "Size_1_x_1",
+    "displayAssetPath": "/OfferCatalog/DisplayAssets/DA_Featured_CID_101_Athena_Commando_M_Stealth",
+    "newDisplayAssetPath": "/OfferCatalog/NewDisplayAssets/DAv2_CID_101_M_Stealth",
+    "newDisplayAsset": {
+     "id": "DAv2_CID_101_M_Stealth",
+     "materialInstances": [],
+     "renderImages": [
+      {
+       "productTag": "Product.BR",
+       "fileName": "cosmo__dfc273da2c19e9a1_6109b8d0c189eb55.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/dfc273da2c19e9a1/renderimage_0.png"
+      },
+      {
+       "productTag": "Product.Juno",
+       "fileName": "cosmo__dfc273da2c19e9a1_f4b32940c56eefc7.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/dfc273da2c19e9a1/renderimage_1.png"
+      }
+     ]
+    },
+    "brItems": [
+     {
+      "id": "CID_101_Athena_Commando_M_Stealth",
+      "name": "Midnight Ops",
+      "description": "Strike by night.",
+      "type": {
+       "value": "outfit",
+       "displayValue": "Outfit",
+       "backendValue": "AthenaCharacter"
+      },
+      "rarity": {
+       "value": "rare",
+       "displayValue": "Rare",
+       "backendValue": "EFortRarity::Rare"
+      },
+      "set": {
+       "value": "Stealth Syndicate",
+       "text": "Part of the Stealth Syndicate set.",
+       "backendValue": "StealthSyndicate"
+      },
+      "introduction": {
+       "chapter": "1",
+       "season": "3",
+       "text": "Introduced in Chapter 1, Season 3.",
+       "backendValue": 3
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/cid_101_athena_commando_m_stealth/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/cid_101_athena_commando_m_stealth/icon.png",
+       "featured": "https://fortnite-api.com/images/cosmetics/br/cid_101_athena_commando_m_stealth/featured.png",
+       "lego": {
+        "small": "https://fortnite-api.com/images/cosmetics/lego/cid_101_athena_commando_m_stealth/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/lego/cid_101_athena_commando_m_stealth/large.png",
+        "wide": "https://fortnite-api.com/images/cosmetics/lego/cid_101_athena_commando_m_stealth/wide.png"
+       },
+       "bean": {
+        "small": "https://fortnite-api.com/images/cosmetics/beans/bean_stealtha/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/beans/bean_stealtha/large.png"
+       }
+      },
+      "showcaseVideo": "bHzyHmn55mc",
+      "added": "2019-11-20T12:50:25Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 500,
+    "finalPrice": 500,
+    "devName": "[VIRTUAL]1 x TBD (SID_Placeholder_462) for 500 MtxCurrency",
+    "offerId": "v2:/abead4c0541b80f4a71a8ce1a3f5bc61ea5f935c04f8f801b65d0da72b108677",
+    "inDate": "2026-10-09T00:00:00Z",
+    "outDate": "2026-10-15T23:59:59.999Z",
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -1,
+    "layoutId": "JT100926NoV.97",
+    "layout": {
+     "id": "JT100926NoV",
+     "name": "Jam Tracks",
+     "index": 23,
+     "rank": 180,
+     "showIneligibleOffers": "always",
+     "useWidePreview": false,
+     "displayType": "tileGrid"
+    },
+    "colors": {
+     "color1": "3a306cff",
+     "color3": "5e40ceff",
+     "textBackgroundColor": "694fc3ff"
+    },
+    "tileSize": "Size_1_x_1",
+    "newDisplayAssetPath": "sid_placeholder_462",
+    "tracks": [
+     {
+      "id": "sid_placeholder_462",
+      "devName": "magicalcureloveshot",
+      "title": "M@GICAL☆CURE! LOVE SHOT!",
+      "artist": "SAWTOWNE ft. Hatsune Miku",
+      "releaseYear": 2023,
+      "bpm": 96,
+      "duration": 204,
+      "difficulty": {
+       "vocals": 5,
+       "guitar": 6,
+       "bass": 4,
+       "plasticBass": 4,
+       "drums": 5,
+       "plasticDrums": 5
+      },
+      "albumArt": "https://cdn.fortnite-api.com/tracks/907d65e6c42faa34.jpg",
+      "added": "2025-01-14T09:32:50Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 500,
+    "finalPrice": 500,
+    "devName": "[VIRTUAL]1 x my ex's best friend for 500 MtxCurrency",
+    "offerId": "v2:/adb20e5ce93fad3692f7f1e386d8320a4a22988e26943a4f3eb00574f800fd00",
+    "inDate": "2026-10-09T00:00:00Z",
+    "outDate": "2026-10-15T23:59:59.999Z",
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -3,
+    "layoutId": "JT100926NoV.98",
+    "layout": {
+     "id": "JT100926NoV",
+     "name": "Jam Tracks",
+     "index": 23,
+     "rank": 180,
+     "showIneligibleOffers": "always",
+     "useWidePreview": false,
+     "displayType": "tileGrid"
+    },
+    "colors": {
+     "color1": "3a306cff",
+     "color3": "5e40ceff",
+     "textBackgroundColor": "694fc3ff"
+    },
+    "tileSize": "Size_1_x_1",
+    "newDisplayAssetPath": "sid_placeholder_47",
+    "tracks": [
+     {
+      "id": "sid_placeholder_47",
+      "devName": "myexsbestfriend",
+      "title": "my ex's best friend",
+      "artist": "mgk & blackbear",
+      "album": "Tickets To My Downfall",
+      "releaseYear": 2020,
+      "bpm": 125,
+      "duration": 144,
+      "difficulty": {
+       "vocals": 3,
+       "guitar": 2,
+       "bass": 1,
+       "plasticBass": 1,
+       "drums": 3,
+       "plasticDrums": 2
+      },
+      "genres": [
+       "Rock"
+      ],
+      "albumArt": "https://cdn.fortnite-api.com/tracks/536047199add701c.jpg",
+      "added": "2024-04-24T03:56:26Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 500,
+    "finalPrice": 500,
+    "devName": "[VIRTUAL]1 x Hey Brother for 500 MtxCurrency",
+    "offerId": "v2:/34323881f735a8aa96ae5d9f0842f8d6992c8f93488db0750d6dbfedbc8409c3",
+    "inDate": "2026-10-01T00:00:00Z",
+    "outDate": "2026-10-31T23:59:59.999Z",
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -59,
+    "layoutId": "JT100926NoV.96",
+    "layout": {
+     "id": "JT100926NoV",
+     "name": "Jam Tracks",
+     "index": 23,
+     "rank": 180,
+     "showIneligibleOffers": "always",
+     "useWidePreview": false,
+     "displayType": "expandableList"
+    },
+    "colors": {
+     "color1": "3a306cff",
+     "color3": "5e40ceff",
+     "textBackgroundColor": "694fc3ff"
+    },
+    "tileSize": "Size_1_x_1",
+    "newDisplayAssetPath": "sid_placeholder_258",
+    "tracks": [
+     {
+      "id": "sid_placeholder_258",
+      "devName": "heybrother",
+      "title": "Hey Brother",
+      "artist": "Avicii",
+      "releaseYear": 2013,
+      "bpm": 125,
+      "duration": 257,
+      "difficulty": {
+       "vocals": 3,
+       "guitar": 3,
+       "bass": 1,
+       "plasticBass": 1,
+       "drums": 2,
+       "plasticDrums": 2
+      },
+      "albumArt": "https://cdn.fortnite-api.com/tracks/99511dd647747808.jpg",
+      "added": "2024-07-11T15:13:48Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 400,
+    "finalPrice": 400,
+    "devName": "[VIRTUAL]1 x Blank for 400 MtxCurrency",
+    "offerId": "v2:/299e145c9f25c30684490a85fa04d16eb67e1352114c06d9a83303f5217f7782",
+    "inDate": "2026-10-04T00:00:00Z",
+    "outDate": "2026-10-13T23:59:59.999Z",
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -2,
+    "layoutId": "alc.0",
+    "colors": {
+     "color1": "661257ff",
+     "color3": "e238b0ff",
+     "textBackgroundColor": "1a0014ff"
+    },
+    "tileBackgroundMaterial": "ShopTile_FNMares26_Grunge",
+    "tileSize": "Size_2_x_1",
+    "newDisplayAssetPath": "/OfferCatalog/NewDisplayAssets/S42/DAv2_Wheel_RevivalLine01",
+    "cars": [
+     {
+      "id": "Wheel_RevivalLine01",
+      "vehicleId": "VCID_Wheel_RevivalLine01",
+      "name": "Nissan GT-R Nismo",
+      "description": "Fanatically tuned.",
+      "type": {
+       "value": "wheel",
+       "displayValue": "Wheel",
+       "backendValue": "VehicleCosmetics_Wheel"
+      },
+      "rarity": {
+       "value": "uncommon",
+       "displayValue": "Uncommon",
+       "backendValue": "EFortRarity::Uncommon"
+      },
+      "images": {
+       "small": "https://fortnite-api.com/images/cosmetics/cars/wheel_revivalline01/small.png",
+       "large": "https://fortnite-api.com/images/cosmetics/cars/wheel_revivalline01/large.png"
+      },
+      "added": "2026-10-03T13:00:46Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 400,
+    "finalPrice": 400,
+    "devName": "[VIRTUAL]1 x Mystery Machine Treads for 400 MtxCurrency",
+    "offerId": "v2:/3a15578457989a9e35883aa2c39891928193453ce159bd7905cb96ad6da595b0",
+    "inDate": "2026-10-09T00:00:00Z",
+    "outDate": "2026-10-13T23:59:59.999Z",
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -3,
+    "layoutId": "alc.0",
+    "colors": {
+     "color1": "62276bff",
+     "color3": "1e0824ff",
+     "textBackgroundColor": "1e0824ff"
+    },
+    "tileBackgroundMaterial": "ShopTile_Storm",
+    "tileSize": "Size_2_x_1",
+    "newDisplayAssetPath": "/OfferCatalog/NewDisplayAssets/S41/DAv2_Wheel_Banjo01",
+    "cars": [
+     {
+      "id": "Wheel_Banjo01",
+      "vehicleId": "VCID_Wheel_Banjo01",
+      "name": "Mystery Machine Treads",
+      "description": "Roll up to the haunting with style.",
+      "type": {
+       "value": "wheel",
+       "displayValue": "Wheel",
+       "backendValue": "VehicleCosmetics_Wheel"
+      },
+      "rarity": {
+       "value": "uncommon",
+       "displayValue": "Uncommon",
+       "backendValue": "EFortRarity::Uncommon"
+      },
+      "images": {
+       "small": "https://fortnite-api.com/images/cosmetics/cars/wheel_banjo01/small.png",
+       "large": "https://fortnite-api.com/images/cosmetics/cars/wheel_banjo01/large.png"
+      },
+      "added": "2025-10-10T14:24:56Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 800,
+    "finalPrice": 800,
+    "devName": "[VIRTUAL]1 x Keys 'n Stuff, 1 x Keys 'n Stuff, 1 x Keys 'n Stuff for 800 MtxCurrency",
+    "offerId": "v2:/fa39f85371a4bfdf5049e7ecd0fa6e2a4d0c43fcae6bea41a41d883d068f397c",
+    "inDate": "2026-10-13T00:00:00Z",
+    "outDate": "2026-10-17T23:59:59.999Z",
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -2,
+    "layoutId": "Deadmau5RF.97",
+    "layout": {
+     "id": "Deadmau5RF",
+     "name": "deadmau5",
+     "index": 9,
+     "rank": 197,
+     "showIneligibleOffers": "always",
+     "useWidePreview": false,
+     "displayType": "tileGrid"
+    },
+    "colors": {
+     "color1": "0bb2d6ff",
+     "color3": "db38daff",
+     "textBackgroundColor": "db38daff"
+    },
+    "tileSize": "Size_1_x_1",
+    "displayAssetPath": "/Game/Catalog/DisplayAssets/DA_Featured_Sparks_FareSpore_Keytar",
+    "newDisplayAssetPath": "/OfferCatalog/NewDisplayAssets/S36/DAv2_Sparks_FareSpore_Keytar",
+    "newDisplayAsset": {
+     "id": "DAv2_Sparks_FareSpore_Keytar",
+     "materialInstances": [],
+     "renderImages": [
+      {
+       "productTag": "Product.Sparks",
+       "fileName": "cosmo__cb62843cf184b2b4_9caa96ca13f6715c.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/cb62843cf184b2b4/renderimage_0.png"
+      },
+      {
+       "productTag": "Product.Sparks",
+       "fileName": "cosmo__cb62843cf184b2b4_a946d36c9476f3a4.png",
+       "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/cb62843cf184b2b4/renderimage_1.png"
+      }
+     ]
+    },
+    "brItems": [
+     {
+      "id": "Backpack_FareSpore_Keytar",
+      "name": "Keys 'n Stuff",
+      "description": "Play it just right.",
+      "type": {
+       "value": "backpack",
+       "displayValue": "Back Bling",
+       "backendValue": "AthenaBackpack"
+      },
+      "rarity": {
+       "value": "icon",
+       "displayValue": "Icon Series",
+       "backendValue": "EFortRarity::Rare"
+      },
+      "series": {
+       "value": "Icon Series",
+       "image": "https://fortnite-api.com/images/cosmetics/series/creatorcollabseries.png",
+       "colors": [
+        "5cf2f3ff",
+        "2bc9caff",
+        "004c71ff",
+        "025253ff",
+        "000f2bff"
+       ],
+       "backendValue": "CreatorCollabSeries"
+      },
+      "set": {
+       "value": "deadmau5",
+       "text": "Part of the deadmau5 set.",
+       "backendValue": "CanadianMouse"
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/backpack_farespore_keytar/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/backpack_farespore_keytar/icon.png",
+       "featured": "https://fortnite-api.com/images/cosmetics/br/backpack_farespore_keytar/featured.png"
+      },
+      "variants": [
+       {
+        "channel": "Particle",
+        "type": "Style",
+        "options": [
+         {
+          "tag": "Particle1",
+          "name": "Default",
+          "image": "https://fortnite-api.com/images/cosmetics/br/backpack_farespore_keytar/variants/particle/particle1.png"
+         },
+         {
+          "tag": "Particle2",
+          "name": "Reactive Off",
+          "image": "https://fortnite-api.com/images/cosmetics/br/backpack_farespore_keytar/variants/particle/particle2.png"
+         }
+        ]
+       }
+      ],
+      "added": "2025-08-05T04:00:52Z"
+     },
+     {
+      "id": "Pickaxe_FareSpore_Keytar",
+      "name": "Keys 'n Stuff",
+      "description": "Play it just right.",
+      "type": {
+       "value": "pickaxe",
+       "displayValue": "Pickaxe",
+       "backendValue": "AthenaPickaxe"
+      },
+      "rarity": {
+       "value": "icon",
+       "displayValue": "Icon Series",
+       "backendValue": "EFortRarity::Rare"
+      },
+      "series": {
+       "value": "Icon Series",
+       "image": "https://fortnite-api.com/images/cosmetics/series/creatorcollabseries.png",
+       "colors": [
+        "5cf2f3ff",
+        "2bc9caff",
+        "004c71ff",
+        "025253ff",
+        "000f2bff"
+       ],
+       "backendValue": "CreatorCollabSeries"
+      },
+      "set": {
+       "value": "deadmau5",
+       "text": "Part of the deadmau5 set.",
+       "backendValue": "CanadianMouse"
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/pickaxe_farespore_keytar/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/pickaxe_farespore_keytar/icon.png",
+       "featured": "https://fortnite-api.com/images/cosmetics/br/pickaxe_farespore_keytar/featured.png"
+      },
+      "variants": [
+       {
+        "channel": "Particle",
+        "type": "Style",
+        "options": [
+         {
+          "tag": "Particle1",
+          "name": "Default",
+          "image": "https://fortnite-api.com/images/cosmetics/br/pickaxe_farespore_keytar/variants/particle/particle1.png"
+         },
+         {
+          "tag": "Particle2",
+          "name": "Reactive Off",
+          "image": "https://fortnite-api.com/images/cosmetics/br/pickaxe_farespore_keytar/variants/particle/particle2.png"
+         }
+        ]
+       }
+      ],
+      "added": "2025-08-06T00:00:00Z"
+     }
+    ],
+    "instruments": [
+     {
+      "id": "Sparks_FareSpore_Keytar",
+      "name": "Keys 'n Stuff",
+      "description": "Play it just right.",
+      "type": {
+       "value": "keyboard",
+       "displayValue": "Keytar",
+       "backendValue": "SparksKeyboard"
+      },
+      "rarity": {
+       "value": "icon",
+       "displayValue": "Icon Series",
+       "backendValue": "EFortRarity::Common"
+      },
+      "images": {
+       "small": "https://fortnite-api.com/images/cosmetics/instruments/sparks_farespore_keytar/small.png",
+       "large": "https://fortnite-api.com/images/cosmetics/instruments/sparks_farespore_keytar/large.png"
+      },
+      "series": {
+       "value": "Icon Series",
+       "image": "https://fortnite-api.com/images/cosmetics/series/creatorcollabseries.png",
+       "colors": [
+        "5cf2f3ff",
+        "2bc9caff",
+        "004c71ff",
+        "025253ff",
+        "000f2bff"
+       ],
+       "backendValue": "CreatorCollabSeries"
+      },
+      "added": "2025-08-05T04:00:35Z"
+     }
+    ]
+   },
+   {
+    "regularPrice": 300,
+    "finalPrice": 300,
+    "devName": "[VIRTUAL]1 x Bear Brained for 300 MtxCurrency",
+    "offerId": "v2:/7acd244a99f5b5d9a3623a16dd2c432daafe4f73dd5529654b6bbe024cd8ed47",
+    "inDate": "2026-10-05T00:00:00Z",
+    "outDate": "2026-10-15T23:59:59.999Z",
+    "giftable": true,
+    "refundable": false,
+    "sortPriority": -3,
+    "layoutId": "alc.0",
+    "colors": {
+     "color1": "661257ff",
+     "color3": "e238b0ff",
+     "textBackgroundColor": "1a0014ff"
+    },
+    "tileBackgroundMaterial": "ShopTile_FNMares26_Grunge",
+    "tileSize": "Size_1_x_1",
+    "displayAssetPath": "/Game/Catalog/DisplayAssets/DA_Featured_bid_393_ghoultrooper",
+    "newDisplayAssetPath": "/OfferCatalog/NewDisplayAssets/S11/DAv2_bid_393_ghoultrooper",
+    "brItems": [
+     {
+      "id": "BID_393_GhoulTrooper",
+      "name": "Bear Brained",
+      "description": "Not so cute anymore.",
+      "type": {
+       "value": "backpack",
+       "displayValue": "Back Bling",
+       "backendValue": "AthenaBackpack"
+      },
+      "rarity": {
+       "value": "uncommon",
+       "displayValue": "Uncommon",
+       "backendValue": "EFortRarity::Uncommon"
+      },
+      "introduction": {
+       "chapter": "2",
+       "season": "1",
+       "text": "Introduced in Chapter 2, Season 1.",
+       "backendValue": 11
+      },
+      "images": {
+       "smallIcon": "https://fortnite-api.com/images/cosmetics/br/bid_393_ghoultrooper/smallicon.png",
+       "icon": "https://fortnite-api.com/images/cosmetics/br/bid_393_ghoultrooper/icon.png",
+       "featured": "https://fortnite-api.com/images/cosmetics/br/bid_393_ghoultrooper/featured.png"
+      },
+      "added": "2019-11-20T12:51:14Z"
+     }
+    ]
+   }
+  ]
+ }
+}

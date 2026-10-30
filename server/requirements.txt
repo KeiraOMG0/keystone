@@ -1,0 +1,31 @@
+# Dashboard backend (server/) — a SEPARATE process from the bot.
+# Install into the same venv as the bot for convenience:
+#   ./venv/Scripts/pip install -r server/requirements.txt
+# fastapi/uvicorn/httpx/aiosqlite/python-dotenv are already required by the
+# bot's root requirements.txt (Step 1's internal API); versions below are
+# pinned to what's already installed there to avoid drift, not duplicated
+# as a second source of truth.
+
+fastapi==0.162.0
+uvicorn==0.54.0
+httpx==0.28.1
+aiosqlite==0.22.1
+python-dotenv==1.2.4
+
+sqlalchemy[asyncio]==2.1.6
+alembic==1.20.1
+itsdangerous==2.2.0
+slowapi==0.1.10
+
+# Required by fastapi.staticfiles.StaticFiles (frontend static asset
+# serving, added in Step 3 — server/app.py mounts server/frontend/dist).
+aiofiles==25.1.0
+
+# Diagnostics page (server/routes/diagnostics.py) process/CPU/memory stats.
+# Optional at runtime: the section degrades to an error note without it.
+psutil==7.2.2
+
+# Live updates: uvicorn needs a websocket implementation to serve /api/ws at
+# all, and server/live/upstream.py uses it as the client to the bot's /ws.
+# Same pin as the root requirements.txt (already there as a transitive dep).
+websockets==17.3

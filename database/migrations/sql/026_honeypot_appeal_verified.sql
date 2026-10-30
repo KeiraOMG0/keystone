@@ -1,0 +1,11 @@
+-- Migration 026: honeypot appeals - verified flag
+--
+-- Appeals submitted through the public form WITHOUT the personal token from the
+-- ban DM (only a typed user id) cannot prove who filed them, so they are stored
+-- with verified = 0 and shown to staff as "Unverified". Appeals created from the
+-- DM link (token path) and every pre-existing row are verified = 1.
+--
+-- SQLite has no "ADD COLUMN IF NOT EXISTS"; the migration runner applies each
+-- version exactly once (schema_migrations), same as the earlier ALTER TABLE
+-- migrations (019, 020, 023).
+ALTER TABLE honeypot_appeals ADD COLUMN verified INTEGER NOT NULL DEFAULT 1;

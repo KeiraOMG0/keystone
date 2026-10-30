@@ -1,0 +1,384 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * Design tokens (see docs/DESIGN_SYSTEM.md). CSS variables on :root (light,
+ * the default) and .dark (hand-tuned dark theme), mapped into Tailwind v4
+ * through `@theme inline` below. Names follow the shadcn convention so
+ * bg-primary / text-muted-foreground / border-border keep working; the
+ * additions (hover, subtle-foreground, *-soft, danger, info, embed...) are
+ * additive. NEVER use raw colours in components: use these tokens.
+ * The `dark` class on <html> is set before first paint by the inline script
+ * in index.html and managed by ThemeContext.
+ */
+
+:root {
+  /* surfaces */
+  --background: #f6f7f9;
+  --foreground: #0f1629;
+  --card: #ffffff;
+  --card-foreground: #0f1629;
+  --popover: #ffffff;
+  --popover-foreground: #0f1629;
+  --secondary: #eef0f4;
+  --secondary-foreground: #0f1629;
+  --muted: #eef0f4;
+  --muted-foreground: #465063;
+  --subtle-foreground: #5f6879;
+  --hover: #f3f4f7;
+  --accent: #eef0f4;
+  --accent-foreground: #0f1629;
+
+  /* brand */
+  --primary: #3b4bd6;
+  --primary-hover: #2f3db8;
+  --primary-foreground: #ffffff;
+  --primary-soft: #edeffc;
+  --primary-soft-foreground: #3b4bd6;
+
+  /* lines and focus */
+  --border: #e3e6ec;
+  --input: #8790a2;
+  --ring: #3b4bd6;
+
+  /* status */
+  --success: #0b7a4b;
+  --success-soft: #e5f5ec;
+  --warning: #8f5200;
+  --warning-soft: #fdf1da;
+  --danger: #be1f2d;
+  --danger-soft: #fdebec;
+  --info: #1b64ae;
+  --info-soft: #e6f0fb;
+  --destructive: #c7222f;
+  --destructive-foreground: #ffffff;
+
+  /* presence aliases */
+  --idle: var(--warning);
+  --dnd: var(--danger);
+  --offline: var(--subtle-foreground);
+
+  /* charts (colour-blind-safe order) */
+  --chart-1: #3b5bdb;
+  --chart-2: #d9730d;
+  --chart-3: #0e8f80;
+  --chart-4: #b5389f;
+  --chart-5: #6b7385;
+
+  /* sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #465063;
+  --sidebar-primary: #3b4bd6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #edeffc;
+  --sidebar-accent-foreground: #3b4bd6;
+  --sidebar-border: #e3e6ec;
+  --sidebar-ring: #3b4bd6;
+
+  /* Discord-style embed preview */
+  --embed-bg: #f2f3f5;
+  --embed-foreground: #2e3338;
+  --embed-muted: #5c6470;
+
+  /* elevation */
+  --elev-sm: 0 1px 2px rgb(15 22 41 / 0.06);
+  --elev-md: 0 8px 24px rgb(15 22 41 / 0.1), 0 2px 6px rgb(15 22 41 / 0.06);
+  --overlay: rgb(15 22 41 / 0.45);
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: #0c0f15;
+  --foreground: #e8ebf2;
+  --card: #141821;
+  --card-foreground: #e8ebf2;
+  --popover: #141821;
+  --popover-foreground: #e8ebf2;
+  --secondary: #1b202b;
+  --secondary-foreground: #e8ebf2;
+  --muted: #1b202b;
+  --muted-foreground: #9aa3b5;
+  --subtle-foreground: #8a93a6;
+  --hover: #1a1f2a;
+  --accent: #1b202b;
+  --accent-foreground: #e8ebf2;
+
+  --primary: #8b98ff;
+  --primary-hover: #a3aeff;
+  --primary-foreground: #0b1030;
+  --primary-soft: #22284a;
+  --primary-soft-foreground: #a9b3ff;
+
+  --border: #262c39;
+  --input: #5f6a80;
+  --ring: #8b98ff;
+
+  --success: #4fd69c;
+  --success-soft: #12291f;
+  --warning: #f3b95a;
+  --warning-soft: #2e2210;
+  --danger: #ff8a8f;
+  --danger-soft: #33161a;
+  --info: #7dbbff;
+  --info-soft: #12263b;
+  --destructive: #d5323f;
+  --destructive-foreground: #ffffff;
+
+  --chart-1: #8fa8ff;
+  --chart-2: #f5a64b;
+  --chart-3: #45d0bd;
+  --chart-4: #e884d6;
+  --chart-5: #a3abbd;
+
+  --sidebar: #141821;
+  --sidebar-foreground: #9aa3b5;
+  --sidebar-primary: #8b98ff;
+  --sidebar-primary-foreground: #0b1030;
+  --sidebar-accent: #22284a;
+  --sidebar-accent-foreground: #a9b3ff;
+  --sidebar-border: #262c39;
+  --sidebar-ring: #8b98ff;
+
+  --embed-bg: #2b2d31;
+  --embed-foreground: #dbdee1;
+  --embed-muted: #a3a6aa;
+
+  --elev-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --elev-md: 0 8px 24px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.04);
+  --overlay: rgb(0 0 0 / 0.6);
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-hover: var(--hover);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-idle: var(--idle);
+  --color-dnd: var(--dnd);
+  --color-offline: var(--offline);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-embed: var(--embed-bg);
+  --color-embed-foreground: var(--embed-foreground);
+  --color-embed-muted: var(--embed-muted);
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+
+  --shadow-sm: var(--elev-sm);
+  --shadow-md: var(--elev-md);
+  --shadow-lg: var(--elev-md);
+
+  --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+
+  /* Type scale (size / line-height). Overrides Tailwind's text-* of the same name. */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.875rem;
+  --text-base--line-height: 1.25rem;
+  --text-md: 0.9375rem;
+  --text-md--line-height: 1.375rem;
+  --text-lg: 1rem;
+  --text-lg--line-height: 1.5rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.75rem;
+  --text-3xl--line-height: 2.25rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: 14px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+  }
+}
+
+#root {
+  min-height: 100svh;
+}
+
+/* ---- Motion (removed under prefers-reduced-motion) ---- */
+@keyframes kb-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+@keyframes kb-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes kb-new-item {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes kb-new-tint {
+  from {
+    background-color: var(--primary-soft);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+/* New live item: tint fading over 3s (plus fade + slide when motion is allowed). */
+.kb-new {
+  animation: kb-new-tint 3s ease-out forwards;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .kb-new {
+    animation:
+      kb-new-item 400ms ease-out,
+      kb-new-tint 3s ease-out forwards;
+  }
+}
+
+.kb-shimmer {
+  background-image: linear-gradient(90deg, var(--muted) 0%, var(--hover) 50%, var(--muted) 100%);
+  background-size: 200% 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .kb-shimmer {
+    animation: kb-shimmer 1.4s linear infinite;
+  }
+  .kb-live-dot {
+    animation: kb-live-pulse 2s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Table density: <html data-density="compact"> */
+html[data-density="compact"] [data-slot="table-cell"] {
+  padding-top: 0.4375rem;
+  padding-bottom: 0.4375rem;
+  font-size: 0.8125rem;
+}
+
+/* Phone safe area for the bottom nav */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Skip link */
+.kb-skip {
+  position: absolute;
+  left: 0.75rem;
+  top: -4rem;
+  z-index: 100;
+  border-radius: 8px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+}
+.kb-skip:focus {
+  top: 0.75rem;
+}

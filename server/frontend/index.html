@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Kick-Bot Dashboard</title>
+    <script>
+      // Apply the saved/system theme before first paint (no flash of the wrong theme).
+      (function () {
+        try {
+          var t = localStorage.getItem("kb-theme") || "system";
+          var dark = t === "dark" || (t === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.toggle("dark", dark);
+          if (localStorage.getItem("kb-density") === "compact") document.documentElement.setAttribute("data-density", "compact");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+# Secrets / local state
+.env
+cookies.txt
+*.bak
+*.sqlite
+*.sqlite3
+# Saved music playlists (record which member made each one)
+playlists/
+# Local tool settings
+.claude/
+server/localhost
+*.db
+*.db-wal
+*.db-shm
+user_cache.db
+*.log
+logs/
+*.pid
+
+# Environments / build artifacts
+venv/
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+server/frontend/dist/
+
+# Archives / old local config that may hold secrets (whole folder: old .env, databases, third-party copies)
+archive/
+*.zip
+*.7z
+
+# Per-server state written by setup_server.py, and the private security audit
+# of this deployment (describes its open risks)
+setup_server/server_state.json
+docs/SECURITY_AUDIT.md
+
+# Regenerable from the repo (npm run build in pot_server/server; also ignored by pot_server/.gitignore)
+pot_server/server/build/
