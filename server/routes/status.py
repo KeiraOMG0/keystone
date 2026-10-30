@@ -38,8 +38,10 @@ _PROBE_TIMEOUT = httpx.Timeout(5.0, connect=3.0)
 async def _probe_internal_api() -> dict:
     start = time.monotonic()
     try:
-        async with httpx.AsyncClient(timeout=_PROBE_TIMEOUT) as client:
-            resp = await client.get(f"{config.INTERNAL_API_BASE_URL}/health")
+        from server.services import internal_client
+
+        async with internal_client._client() as client:  # pooled: no ~280 ms client setup per probe
+            resp = await client.get("/health", timeout=_PROBE_TIMEOUT)
         latency_ms = round((time.monotonic() - start) * 1000)
         if resp.status_code == 200:
             return {"status": "up", "latency_ms": latency_ms}

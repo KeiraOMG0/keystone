@@ -578,7 +578,7 @@ export function RoleEditorDialog({
               <div>
                 <h3 className="text-md font-semibold text-foreground">Bot permissions</h3>
                 <p className="text-xs text-muted-foreground">
-                  The kick-bot's own permission checks (same grants as the Permissions page).
+                  Keystone's own permission checks (same grants as the Permissions page).
                 </p>
               </div>
               {role?.is_default_staff ? (

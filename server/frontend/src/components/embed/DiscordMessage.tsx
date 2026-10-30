@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 export function DiscordMessage({
   text,
   children,
-  botName = "Kick-Bot",
+  botName = "Keystone",
   className,
 }: {
   text?: ReactNode

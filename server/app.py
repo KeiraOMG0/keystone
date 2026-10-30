@@ -192,6 +192,9 @@ async def _lifespan(app: FastAPI):
             housekeeping_task.cancel()
             await asyncio.gather(housekeeping_task, return_exceptions=True)
         await live_hub.stop()
+        from server.services import http_pool
+
+        await http_pool.close_all()
 
 
 def create_app() -> FastAPI:

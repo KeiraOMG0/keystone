@@ -2,6 +2,7 @@ import { useEffect, type ComponentType, type SVGProps } from "react"
 import { Link } from "react-router-dom"
 import { Activity, ArrowRight, CodeXml, ExternalLink, FileText, Gavel, LifeBuoy, ShieldCheck } from "lucide-react"
 import { PublicShell } from "@/components/layout/PublicShell"
+import { SOURCE_CODE_URL } from "@/lib/project"
 
 interface HubLink {
   to: string
@@ -12,9 +13,7 @@ interface HubLink {
   external?: boolean
 }
 
-/** Public source of the bot (GPL-3.0; the birthday system is AGPL-3.0, whose
- *  section 13 asks us to offer the source to people who use the bot). */
-export const SOURCE_CODE_URL = "https://github.com/KeiraOMG0/keystone/tree/main"
+
 
 const HUB_LINKS: HubLink[] = [
   {

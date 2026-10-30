@@ -30,7 +30,7 @@ export default function HomePage() {
         <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <ShieldIcon className="size-6" />
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Kick-Bot Dashboard</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Keystone</h1>
         <p className="max-w-sm text-base text-muted-foreground">
           Sign in with your Discord account to view live server stats and moderation tools.
         </p>

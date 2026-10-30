@@ -36,7 +36,14 @@ class SupervisorError(Exception):
         self.body = body or {}
 
 
-def _client() -> httpx.AsyncClient:
+def _client():
+    """Pooled per event loop (server/services/http_pool.py); not closed on exit."""
+    from server.services import http_pool
+
+    return http_pool.borrow("supervisor", _new_client)
+
+
+def _new_client() -> httpx.AsyncClient:
     return httpx.AsyncClient(
         base_url=config.SUPERVISOR_BASE_URL,
         headers={"Authorization": f"Bearer {config.SUPERVISOR_CONTROL_SECRET}"},

@@ -127,8 +127,8 @@ export function SidebarContent({
         )}
         {!collapsed ? (
           <div className="min-w-0 flex-1 leading-tight">
-            <p className="truncate text-md font-semibold text-foreground">Kick-Bot</p>
-            <p className="truncate text-xs text-subtle-foreground">Moderator dashboard</p>
+            <p className="truncate text-md font-semibold text-foreground">Keystone</p>
+            <p className="truncate text-xs text-subtle-foreground">Staff dashboard</p>
           </div>
         ) : null}
         {onToggleCollapsed && !collapsed ? (

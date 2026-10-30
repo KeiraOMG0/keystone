@@ -20,6 +20,7 @@ import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { usePrefs } from "@/context/PrefsContext"
 import { pushRecent } from "@/lib/storage"
 import { cn } from "@/lib/utils"
+import { preloadDashboardPages } from "@/app/pageLoaders"
 
 function formatClock(d: Date): string {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -125,6 +126,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   const toggleSidebar = useCallback(() => setSidebarCollapsed(!collapsed), [collapsed, setSidebarCollapsed])
   const showShortcuts = useCallback(() => setShortcutsOpen(true), [])
   useHotkeys({ onToggleSidebar: toggleSidebar, onShowShortcuts: showShortcuts })
+
+  // Signed in: fetch every page's code in the background so page switches are instant.
+  useEffect(() => {
+    if (user) preloadDashboardPages()
+  }, [user])
+
+  // Browser tab title per page ("Moderation · Keystone"), so open tabs and
+  // history entries are distinguishable.
+  useEffect(() => {
+    const item = navItemForPath(pathname)
+    document.title = item ? `${item.label} · Keystone` : "Keystone"
+  }, [pathname])
 
   // Close the phone drawer on navigation; remember visited pages for the palette.
   useEffect(() => {

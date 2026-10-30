@@ -58,6 +58,7 @@ from __future__ import annotations
 import httpx
 
 from server import config
+from server.services import http_pool
 
 _HEADERS = {"Authorization": f"Bearer {config.INTERNAL_API_SECRET}"}
 _TIMEOUT = httpx.Timeout(10.0, connect=5.0)
@@ -75,8 +76,15 @@ class InternalAPIError(Exception):
         self.detail = detail
 
 
-def _client() -> httpx.AsyncClient:
+def _new_client() -> httpx.AsyncClient:
     return httpx.AsyncClient(base_url=config.INTERNAL_API_BASE_URL, headers=_HEADERS, timeout=_TIMEOUT)
+
+
+def _client():
+    """`async with _client() as client:` borrows the ONE pooled client per event
+    loop (server/services/http_pool.py): a new httpx client costs ~280 ms here,
+    a pooled call ~3 ms. The client is not closed on exit."""
+    return http_pool.borrow("internal_api", _new_client)
 
 
 async def get_guild_stats(guild_id: int) -> dict:
@@ -1324,11 +1332,9 @@ async def get_diagnostics(guild_id: int) -> dict:
     dump (staff-only page; the caller gates on require_staff). Longer timeout
     than the default: the first call after a cache expiry runs the heavy
     (DB/GC/socket) collectors."""
-    async with httpx.AsyncClient(
-        base_url=config.INTERNAL_API_BASE_URL, headers=_HEADERS, timeout=httpx.Timeout(20.0, connect=5.0)
-    ) as client:
+    async with _client() as client:
         try:
-            resp = await client.get(f"/guilds/{guild_id}/diagnostics")
+            resp = await client.get(f"/guilds/{guild_id}/diagnostics", timeout=httpx.Timeout(20.0, connect=5.0))
         except httpx.RequestError as exc:
             raise InternalAPIError(f"Internal API unreachable: {exc}") from exc
 
@@ -1343,7 +1349,7 @@ async def clear_diagnostics_cache(guild_id: int, requested_by: str) -> dict:
     """POST /guilds/{guild_id}/diagnostics/cache/clear -> empties the bot's
     diagnostics caches; returns {"cleared": [...], "entries", "log_cache_cleared", "at"}.
     Any failure (bot down included) -> InternalAPIError."""
-    async with httpx.AsyncClient(base_url=config.INTERNAL_API_BASE_URL, headers=_HEADERS, timeout=_TIMEOUT) as client:
+    async with _client() as client:
         try:
             resp = await client.post(
                 f"/guilds/{guild_id}/diagnostics/cache/clear", json={"requested_by": requested_by}

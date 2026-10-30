@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { Check, ExternalLink, Keyboard, LogOut, Monitor, Moon, Sun, Terminal } from "lucide-react"
+import { Check, CodeXml, ExternalLink, Keyboard, LogOut, Monitor, Moon, Sun, Terminal } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -16,6 +16,7 @@ import { useDeveloperMode } from "@/context/DeveloperModeContext"
 import { useTheme } from "@/context/ThemeContext"
 import { cn } from "@/lib/utils"
 import { discordAvatarUrl } from "@/lib/format"
+import { SOURCE_CODE_URL } from "@/lib/project"
 
 const THEME_OPTIONS = [
   { value: "light", label: "Light", Icon: Sun },
@@ -103,7 +104,16 @@ export function ProfileMenu({ onShowShortcuts }: { onShowShortcuts: () => void }
             Service status
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <a href={SOURCE_CODE_URL} target="_blank" rel="noopener noreferrer">
+            <CodeXml />
+            Source code
+          </a>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <p className="px-2 py-1 text-2xs text-subtle-foreground" title={__BUILD_TIME__}>
+          Build {new Date(__BUILD_TIME__).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
+        </p>
         <DropdownMenuItem onSelect={() => logout.mutate()}>
           <LogOut />
           {logout.isPending ? "Signing out…" : "Sign out"}

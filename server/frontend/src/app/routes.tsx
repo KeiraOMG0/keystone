@@ -8,32 +8,34 @@ import { PageTransition } from "@/components/layout/PageTransition"
 import { PageSkeleton } from "@/components/patterns/states"
 import NotFound404 from "@/pages/notfound/NotFound404"
 import { OwnerOnlyRoute } from "@/pages/notfound/OwnerOnlyRoute"
+import { pageLoaders } from "@/app/pageLoaders"
 
-// Every protected page is its own chunk, loaded on first visit to its route
-// instead of upfront — HomePage stays a static import since it's the very
-// first thing anyone sees (public landing page, no point deferring it).
-const DashboardPage = lazy(() => import("@/pages/dashboard/DashboardPage"))
-const ModerationPage = lazy(() => import("@/pages/moderation/ModerationPage"))
-const TicketsPage = lazy(() => import("@/pages/tickets/TicketsPage"))
-const TicketDetailPage = lazy(() => import("@/pages/tickets/TicketDetailPage"))
-const TicketPanelBuilderPage = lazy(() => import("@/pages/tickets/TicketPanelBuilderPage"))
-const PermissionsPage = lazy(() => import("@/pages/permissions/PermissionsPage"))
-const SelfRolesPage = lazy(() => import("@/pages/selfroles/SelfRolesPage"))
-const TemplatesPage = lazy(() => import("@/pages/templates/TemplatesPage"))
-const TemplateEditorPage = lazy(() => import("@/pages/templates/TemplateEditorPage"))
-const QotdPage = lazy(() => import("@/pages/qotd/QotdPage"))
-const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"))
-const HoneypotPage = lazy(() => import("@/pages/honeypot/HoneypotPage"))
-const DiagnosticsPage = lazy(() => import("@/pages/diagnostics/DiagnosticsPage"))
-const RolesPage = lazy(() => import("@/pages/roles/RolesPage"))
-const FortniteShopPage = lazy(() => import("@/pages/fortnite/FortniteShopPage"))
-const BirthdaysPage = lazy(() => import("@/pages/birthdays/BirthdaysPage"))
-const AutomationPage = lazy(() => import("@/pages/automation/AutomationPage"))
-const AuditLogPage = lazy(() => import("@/pages/audit/AuditLogPage"))
-const MusicPage = lazy(() => import("@/pages/music/MusicPage"))
-const MembersPage = lazy(() => import("@/pages/members/MembersPage"))
-const MemberProfilePage = lazy(() => import("@/pages/members/MemberProfilePage"))
-const ModToolsPage = lazy(() => import("@/pages/modtools/ModToolsPage"))
+// Every protected page is its own chunk (loaders in app/pageLoaders.ts, which
+// AppShell also uses to preload them in the background after sign-in, so a
+// page switch never waits for its code). HomePage stays a static import since
+// it's the very first thing anyone sees (public landing page).
+const DashboardPage = lazy(pageLoaders.DashboardPage)
+const ModerationPage = lazy(pageLoaders.ModerationPage)
+const TicketsPage = lazy(pageLoaders.TicketsPage)
+const TicketDetailPage = lazy(pageLoaders.TicketDetailPage)
+const TicketPanelBuilderPage = lazy(pageLoaders.TicketPanelBuilderPage)
+const PermissionsPage = lazy(pageLoaders.PermissionsPage)
+const SelfRolesPage = lazy(pageLoaders.SelfRolesPage)
+const TemplatesPage = lazy(pageLoaders.TemplatesPage)
+const TemplateEditorPage = lazy(pageLoaders.TemplateEditorPage)
+const QotdPage = lazy(pageLoaders.QotdPage)
+const SettingsPage = lazy(pageLoaders.SettingsPage)
+const HoneypotPage = lazy(pageLoaders.HoneypotPage)
+const DiagnosticsPage = lazy(pageLoaders.DiagnosticsPage)
+const RolesPage = lazy(pageLoaders.RolesPage)
+const FortniteShopPage = lazy(pageLoaders.FortniteShopPage)
+const BirthdaysPage = lazy(pageLoaders.BirthdaysPage)
+const AutomationPage = lazy(pageLoaders.AutomationPage)
+const AuditLogPage = lazy(pageLoaders.AuditLogPage)
+const MusicPage = lazy(pageLoaders.MusicPage)
+const MembersPage = lazy(pageLoaders.MembersPage)
+const MemberProfilePage = lazy(pageLoaders.MemberProfilePage)
+const ModToolsPage = lazy(pageLoaders.ModToolsPage)
 // Hidden owner-only page: OwnerOnlyRoute renders the catch-all NotFound404 for
 // everyone else (chunk not even loaded), identical to an unknown path.
 const DebugPage = lazy(() => import("@/pages/debug/DebugPage"))
