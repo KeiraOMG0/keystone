@@ -1,6 +1,6 @@
 import { useEffect, type ComponentType, type SVGProps } from "react"
 import { Link } from "react-router-dom"
-import { Activity, ArrowRight, FileText, Gavel, LifeBuoy, ShieldCheck } from "lucide-react"
+import { Activity, ArrowRight, CodeXml, ExternalLink, FileText, Gavel, LifeBuoy, ShieldCheck } from "lucide-react"
 import { PublicShell } from "@/components/layout/PublicShell"
 
 interface HubLink {
@@ -8,7 +8,13 @@ interface HubLink {
   title: string
   description: string
   icon: ComponentType<SVGProps<SVGSVGElement>>
+  /** Off-site link: opens in a new tab instead of client-side routing. */
+  external?: boolean
 }
+
+/** Public source of the bot (GPL-3.0; the birthday system is AGPL-3.0, whose
+ *  section 13 asks us to offer the source to people who use the bot). */
+export const SOURCE_CODE_URL = "https://github.com/KeiraOMG0/keystone/tree/main"
 
 const HUB_LINKS: HubLink[] = [
   {
@@ -35,11 +41,19 @@ const HUB_LINKS: HubLink[] = [
     description: "Check whether the bot and website are online right now, and what error codes mean.",
     icon: Activity,
   },
+  {
+    to: SOURCE_CODE_URL,
+    title: "Bot source code",
+    description: "Keystone, the bot that runs this server, is open source. Read the code on GitHub (GPL-3.0, birthday system AGPL-3.0).",
+    icon: CodeXml,
+    external: true,
+  },
 ]
 
 /**
  * PUBLIC member hub (/hub): one place for members who are not staff (and
- * banned people) to find the appeal page, terms, privacy policy and status.
+ * banned people) to find the appeal page, terms, privacy policy, status and
+ * the bot's public source code (SOURCE_CODE_URL).
  * Linked from the landing page and from the dashboard's 403 page. No auth,
  * no API calls.
  */
@@ -63,28 +77,44 @@ export default function HubPage() {
       </div>
 
       <ul className="grid gap-4 sm:grid-cols-2">
-        {HUB_LINKS.map(({ to, title, description, icon: Icon }) => (
-          <li key={to}>
-            <Link
-              to={to}
-              className="group flex h-full flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm transition-colors duration-[120ms] hover:border-input hover:bg-hover"
-            >
+        {HUB_LINKS.map(({ to, title, description, icon: Icon, external }) => {
+          const className =
+            "group flex h-full flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm transition-colors duration-[120ms] hover:border-input hover:bg-hover"
+          const Arrow = external ? ExternalLink : ArrowRight
+          const body = (
+            <>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex size-10 items-center justify-center rounded-lg bg-primary-soft text-primary-soft-foreground">
                   <Icon className="size-5" aria-hidden />
                 </div>
-                <ArrowRight
+                <Arrow
                   className="size-4 text-subtle-foreground transition-transform duration-[120ms] group-hover:translate-x-0.5 group-hover:text-foreground"
                   aria-hidden
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+                <h2 className="text-lg font-semibold text-foreground">
+                  {title}
+                  {external ? <span className="sr-only"> (opens in a new tab)</span> : null}
+                </h2>
                 <p className="text-sm leading-6 text-muted-foreground">{description}</p>
               </div>
-            </Link>
-          </li>
-        ))}
+            </>
+          )
+          return (
+            <li key={to}>
+              {external ? (
+                <a href={to} target="_blank" rel="noopener noreferrer" className={className}>
+                  {body}
+                </a>
+              ) : (
+                <Link to={to} className={className}>
+                  {body}
+                </Link>
+              )}
+            </li>
+          )
+        })}
       </ul>
 
       <section aria-labelledby="hub-help" className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm sm:flex-row sm:gap-4">

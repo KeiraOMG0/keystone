@@ -16,7 +16,7 @@ The birthday system is a Python port of **[BirthdayBot](https://github.com/NoiTh
 - `services/birthday_service.py`, `database/repositories/birthday_repo.py`
 - the birthday migrations `database/migrations/sql/012_birthdays.sql` to `015_birthday_nullable_tz.sql` (not edited: applied migrations are never changed)
 
-The GPL-3.0 (section 13) explicitly allows combining GPL-3.0 code with AGPL-3.0 code. Each part keeps its own licence, and the AGPL's extra condition applies to the combined program: if you run a **modified** version and people interact with it over a network (for example members using its birthday commands on Discord), you must offer them the corresponding source code. Publishing your repository and linking it (for example in the bot's help or the website footer) satisfies this.
+The GPL-3.0 (section 13) explicitly allows combining GPL-3.0 code with AGPL-3.0 code. Each part keeps its own licence, and the AGPL's extra condition applies to the combined program: if you run a **modified** version and people interact with it over a network (for example members using its birthday commands on Discord), you must offer them the corresponding source code. This repository is public and linked from the website's member hub (`/hub`, "Bot source code"), which satisfies this for the running bot.
 
 ### Vendored code
 
