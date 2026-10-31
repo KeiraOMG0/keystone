@@ -1947,3 +1947,16 @@ async def music_load_playlist(guild_id: int, name: str, *, actor_id: int, channe
 
 async def music_delete_playlist(guild_id: int, name: str, *, actor_id: int) -> dict:
     return await _music_request("DELETE", guild_id, f"/playlists/{name}", params={"actor_id": actor_id})
+
+
+# Member hub (/hub, internal_api/routes/member_hub.py). `user_id` is always the
+# session user (server/routes/hub.py), never a value from the request.
+async def get_member_hub(guild_id: int, user_id: int) -> dict:
+    return await _feature_request("GET", f"/guilds/{guild_id}/hub/{int(user_id)}")
+
+
+async def toggle_hub_self_role(guild_id: int, user_id: int, panel_id: int, role_id: int, assign: bool) -> dict:
+    return await _feature_request(
+        "POST", f"/guilds/{guild_id}/hub/{int(user_id)}/self-roles",
+        json={"panel_id": panel_id, "role_id": role_id, "assign": assign},
+    )

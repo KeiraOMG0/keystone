@@ -54,6 +54,7 @@ from server.routes import members  # member profile + verify (/api/members)
 from server.routes import birthdays  # Birthdays page (/api/birthdays, manage_birthdays)
 from server.routes import music  # Music page (/api/music, control_music; staff for status details/debugurl)
 from server.routes import client_errors  # public browser crash reports (/api/public/client-errors)
+from server.routes import hub  # member hub (/api/hub): the signed-in person's own view + self-roles
 from server.services.error_reports import ErrorCaptureMiddleware  # unhandled exceptions -> Debug > Errors
 
 # server/app.py -> server/ -> server/frontend/dist
@@ -274,6 +275,7 @@ def create_app() -> FastAPI:
     app.include_router(birthdays.router)  # /api/birthdays/* (manage_birthdays)
     app.include_router(music.router)  # /api/music/* (control_music; staff status/debugurl)
     app.include_router(client_errors.router)  # POST /api/public/client-errors (public, rate limited)
+    app.include_router(hub.router)  # /api/hub (any signed-in Discord account; the bot decides membership)
     app.include_router(live_endpoint.router)  # WS /api/ws (browser live updates)
 
     @app.get("/health")

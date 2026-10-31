@@ -9,7 +9,7 @@ import { Link } from "react-router-dom"
  */
 
 /** Shown as "Last updated" at the top of the page. ISO date (YYYY-MM-DD). */
-export const TERMS_LAST_UPDATED = "2026-10-29"
+export const TERMS_LAST_UPDATED = "2026-10-30"
 
 /**
  * CONTACT placeholder: optional extra contact line shown in the "Contact"
@@ -326,9 +326,10 @@ export const TERMS_SECTIONS: TermsSection[] = [
           <li>look for or use security holes. If you find one, tell the server owner privately instead.</li>
         </List>
         <P>
-          The public pages (home, <A to="/hub">member hub</A>, <A to="/status">status</A>, <A to="/appeal">ban appeal</A>,
-          these terms and the <A to="/privacy">Privacy Policy</A>) are open to everyone without signing in. Dashboard
-          sessions last up to 30 days and you can sign out at any time.
+          The public pages (home, <A to="/status">status</A>, <A to="/appeal">ban appeal</A>, these terms and the{" "}
+          <A to="/privacy">Privacy Policy</A>) are open to everyone without signing in. The <A to="/hub">member hub</A>{" "}
+          needs a Discord sign-in: it shows you only your own information, and roles you pick there follow the same
+          rules as the role buttons in the server. Sessions last up to 30 days and you can sign out at any time.
         </P>
       </>
     ),

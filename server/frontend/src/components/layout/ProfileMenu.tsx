@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { Check, CodeXml, ExternalLink, Keyboard, LogOut, Monitor, Moon, Sun, Terminal } from "lucide-react"
+import { Check, CodeXml, ExternalLink, Keyboard, LogOut, Monitor, Moon, Sun, Terminal, Users } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -97,6 +97,12 @@ export function ProfileMenu({ onShowShortcuts }: { onShowShortcuts: () => void }
           <Keyboard />
           Keyboard shortcuts
           <Kbd className="ml-auto">?</Kbd>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/hub">
+            <Users />
+            Member hub
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/status">

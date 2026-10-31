@@ -37,6 +37,7 @@ from internal_api.routes import automation  # dashboard Automation page (/automa
 from internal_api.routes import birthdays  # dashboard Birthdays page (/birthdays/...)
 from internal_api.routes import member_tools  # member profile, verify, purge job, msglog DM export, server info
 from internal_api.routes import music  # dashboard Music page (/music/...), drives the live MusicCog
+from internal_api.routes import member_hub  # member hub (/hub): a member's own view + self-role toggles
 
 
 def create_app() -> FastAPI:
@@ -70,6 +71,7 @@ def create_app() -> FastAPI:
     app.include_router(member_tools.router)  # member profile / verify / purge / msglog export / server-info
     app.include_router(birthdays.router)  # Birthdays page: list / config / override / test / timers / import-export
     app.include_router(music.router)  # Music page: state / control / play+search jobs / playlists / status
+    app.include_router(member_hub.router)  # member hub: GET /hub/{user_id}, POST .../self-roles
     app.include_router(ws.router)  # WS /ws: live-event stream for the dashboard backend only
 
     @app.get("/health")

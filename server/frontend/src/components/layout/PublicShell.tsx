@@ -50,6 +50,7 @@ export function PublicShell({
   children,
   backTo = "/",
   backLabel = "Back to home",
+  headerActions,
   mainClassName,
 }: {
   /** Short name shown next to the K mark in the header. */
@@ -57,6 +58,8 @@ export function PublicShell({
   children: ReactNode
   backTo?: string
   backLabel?: string
+  /** Replaces the "back" button on the right of the header (e.g. the hub's account controls). */
+  headerActions?: ReactNode
   mainClassName?: string
 }) {
   return (
@@ -71,9 +74,11 @@ export function PublicShell({
           </div>
           <span className="truncate text-md font-semibold">{label}</span>
         </Link>
-        <Button asChild variant="ghost" size="sm">
-          <Link to={backTo}>{backLabel}</Link>
-        </Button>
+        {headerActions ?? (
+          <Button asChild variant="ghost" size="sm">
+            <Link to={backTo}>{backLabel}</Link>
+          </Button>
+        )}
       </header>
       <main className={cn("mx-auto flex w-full max-w-[1000px] flex-1 flex-col gap-6 px-4 py-8 md:py-12", mainClassName)}>
         {children}

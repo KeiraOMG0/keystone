@@ -1,11 +1,14 @@
 """
 Discord OAuth2 login flow.
 
-GET /api/auth/login
+GET /api/auth/login[?next=/hub]
     Redirects the browser to Discord's authorize URL. Generates a random
     `state` value, stores it in a short-lived httpOnly/SameSite=Lax cookie
     (SameSite=Lax specifically because it must survive Discord's top-level
     cross-site redirect back to our callback — Strict would drop it).
+    `next` picks where the callback lands; only the fixed paths in
+    LOGIN_NEXT_PATHS are honoured (anything else = the dashboard), so it can
+    never become an open redirect.
 
 GET /api/auth/callback
     Validates `state` against the cookie (CSRF protection for the OAuth
@@ -58,6 +61,19 @@ DISCORD_AUTHORIZE_URL = "https://discord.com/api/oauth2/authorize"
 DISCORD_TOKEN_URL = "https://discord.com/api/oauth2/token"
 DISCORD_API_BASE = "https://discord.com/api/v10"
 DISCORD_REVOKE_URL = "https://discord.com/api/oauth2/token/revoke"
+
+# Where a sign-in may return to (the member hub signs in through the same flow):
+# path -> the short key kept in the cookie (a "/" would make the value quoted).
+LOGIN_NEXT_PATHS = {"/hub": "hub"}
+NEXT_COOKIE_NAME = "oauth_next"
+
+
+def safe_next(value: str | None) -> str | None:
+    return value if value in LOGIN_NEXT_PATHS else None
+
+
+def _next_from_cookie(value: str | None) -> str | None:
+    return next((path for path, key in LOGIN_NEXT_PATHS.items() if key == value), None)
 
 
 async def revoke_token(client: httpx.AsyncClient, token: str) -> None:
@@ -126,11 +142,20 @@ def _build_authorize_url(state: str) -> str:
 
 @router.get("/login")
 @limiter.limit("10/minute")
-async def login(request: Request) -> RedirectResponse:
+async def login(request: Request, next: str | None = None) -> RedirectResponse:
     state = secrets.token_urlsafe(32)
     authorize_url = _build_authorize_url(state)
 
     response = RedirectResponse(url=authorize_url, status_code=status.HTTP_302_FOUND)
+    next_path = safe_next(next)
+    if next_path:
+        response.set_cookie(
+            key=NEXT_COOKIE_NAME, value=LOGIN_NEXT_PATHS[next_path], max_age=config.OAUTH_STATE_MAX_AGE_SECONDS,
+            httponly=True, secure=cookie_secure(request), samesite="lax", path="/api/auth",
+        )
+    else:
+        response.delete_cookie(key=NEXT_COOKIE_NAME, path="/api/auth", secure=cookie_secure(request),
+                               httponly=True, samesite="lax")
     response.set_cookie(
         key=config.OAUTH_STATE_COOKIE_NAME,
         value=state,
@@ -251,7 +276,9 @@ async def callback(
         cached_role_ids=cached_role_ids,
     )
 
-    response = RedirectResponse(url=config.FRONTEND_BASE_URL, status_code=status.HTTP_302_FOUND)
+    next_path = _next_from_cookie(request.cookies.get(NEXT_COOKIE_NAME))
+    target = config.FRONTEND_BASE_URL.rstrip("/") + next_path if next_path else config.FRONTEND_BASE_URL
+    response = RedirectResponse(url=target, status_code=status.HTTP_302_FOUND)
     response.set_cookie(
         key=config.SESSION_COOKIE_NAME,
         value=sign_session_id(session.session_id),
@@ -261,11 +288,12 @@ async def callback(
         samesite="lax",
         path="/",
     )
-    # Clear the now-consumed state cookie.
-    response.delete_cookie(
-        key=config.OAUTH_STATE_COOKIE_NAME, path="/api/auth",
-        secure=cookie_secure(request), httponly=True, samesite="lax",
-    )
+    # Clear the now-consumed state (and next) cookies.
+    for consumed in (config.OAUTH_STATE_COOKIE_NAME, NEXT_COOKIE_NAME):
+        response.delete_cookie(
+            key=consumed, path="/api/auth",
+            secure=cookie_secure(request), httponly=True, samesite="lax",
+        )
     return response
 
 

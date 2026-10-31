@@ -353,6 +353,18 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
           Discord login token is used only during sign-in, is not stored, and is cancelled with Discord right after.
         </P>
 
+        <H3>The member hub</H3>
+        <P>
+          The <A to="/hub">member hub</A> uses the same Discord sign-in and the same login session; nothing extra is
+          stored. It shows you your own information, read live from the bot each time you open it: your roles, when you
+          joined, how many warnings you have and their dates (never the reason or who gave it), an active timeout, your
+          birthday and open tickets, plus things any member can already see in Discord (upcoming events, recent and
+          upcoming birthdays, the latest question of the day, what music is playing, member counts). If you are not in
+          the server, it only shows your own status: removed by the trap channel (with your appeal&apos;s outcome),
+          banned, or not a member. Picking a role there gives or removes that Discord role, exactly like the role
+          buttons in the server.
+        </P>
+
         <H3>Website visits</H3>
         <P>
           Like most websites, our web server logs requests: the page or API address asked for, the time, the result and
@@ -442,7 +454,8 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
             member&apos;s birthday with the birthday command.
           </li>
           <li>
-            <strong>You</strong> can see your own appeal and its outcome on the appeal page (never the staff note).
+            <strong>You</strong> can see your own appeal and its outcome on the appeal page (never the staff note), and
+            your own roles, warning count and dates, birthday and tickets on the member hub.
           </li>
         </List>
         <P>The message log can only be exported by staff, and only into their Discord DMs, never into a channel.</P>
