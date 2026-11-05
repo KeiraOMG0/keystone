@@ -35,7 +35,7 @@ The bot and the dashboard are separate processes that share one `.env`. The dash
 | Ollama | optional | question of the day |
 | cloudflared | optional | putting the dashboard on the internet |
 
-Windows is the main platform (`.bat` scripts, `sv.bat`). The Python and Node parts are cross-platform, and `install_scripts/` has macOS and Linux versions, but those are less tested.
+Windows is the main platform (`.bat` scripts, `sv.bat`). The Python and Node parts are cross-platform, and `scripts/` has macOS and Linux versions, but those are less tested.
 
 ## 1. Create the Discord application
 
@@ -57,7 +57,7 @@ copy .env.example .env
 ```
 
 (macOS / Linux: `python3 -m venv venv`, `venv/bin/pip ...`, `cp .env.example .env`.)
-`install_scripts/` can do steps 2 to 4 for you: see [`install_scripts/README.md`](install_scripts/README.md).
+`scripts/` can do steps 2 to 4 for you: see [`scripts/README.md`](scripts/README.md).
 
 ## 3. Configure `.env`
 
@@ -104,8 +104,8 @@ Pick one way:
 | Way | Command | Notes |
 |---|---|---|
 | Supervisor (recommended) | `venv\Scripts\python.exe supervisor.py` | runs the bot, dashboard and tunnel; restarts them if they crash; weekly log rotation; crash alerts to `SUPERVISOR_WEBHOOK_URL` |
-| `sv` menu (Windows) | `sv start`, `sv s` (status), `sv r a <reason>` (restart all), `sv help` | runs the supervisor without a window; `install_scripts\windows\06-install-supervisor-autostart.bat` starts it at login |
-| Separate windows | `start_all.bat`, or `run_bot.bat` then `run_dashboard.bat` | no auto-restart; start the bot before the dashboard |
+| `sv` menu (Windows) | `sv start`, `sv s` (status), `sv r a <reason>` (restart all), `sv help` | runs the supervisor without a window; `scripts\windows\06-install-supervisor-autostart.bat` starts it at login |
+| Separate windows | `scripts\windows\start_all.bat`, or `run_bot.bat` then `run_dashboard.bat` from the same folder | no auto-restart; start the bot before the dashboard |
 
 Open the dashboard at **`http://localhost:8080`** (not `127.0.0.1`: sign-in cookies and the OAuth redirect are tied to the exact host) and sign in with Discord.
 

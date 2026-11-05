@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from cogs.music import command_summary, render_music_help
 from core.text_utils import EMBED_DESCRIPTION_LIMIT, split_message
-from ui.paginator import Paginator
+from core.ui.paginator import Paginator
 from services.permission_service import PermissionService
 
 
@@ -373,12 +373,12 @@ _DEV_PAGES = [
             "```\n"
             "cogs/        — slash command handlers only, no business logic\n"
             "services/    — all business logic, no raw SQL\n"
-            "core/        — rendering, placeholders, event bus, sync queue\n"
+            "core/        — rendering, placeholders, event bus, sync queue,\n"
+            "               discord.ui Views and Modals (core/ui/)\n"
             "database/\n"
             "  connection.py      — aiosqlite wrapper\n"
             "  migrations/        — versioned SQL runner\n"
             "  repositories/      — one file per table group, all SQL lives here\n"
-            "ui/          — discord.ui Views and Modals\n"
             "tests/       — pytest + pytest-asyncio\n"
             "```\n\n"
             "**Layer rules (never break):**\n"

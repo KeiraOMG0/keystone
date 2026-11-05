@@ -2,9 +2,9 @@
 Orchestrator + CLI for the standalone server setup utility.
 
 Usage (from the repo root):
-    python setup_server.py                 # apply: create/repair to match config.py
-    python setup_server.py --check          # read-only drift report, no changes
-    python setup_server.py --dry-run        # same as --check (Discord has no simulated-write API,
+    python -m setup_server                 # apply: create/repair to match config.py
+    python -m setup_server --check          # read-only drift report, no changes
+    python -m setup_server --dry-run        # same as --check (Discord has no simulated-write API,
                                              # so this is an honest alias, not a true dry run)
 
 Requires DISCORD_TOKEN in the environment / .env file.
@@ -137,7 +137,7 @@ async def run(check: bool, dry_run: bool) -> int:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Provision a new Discord server to match setup_server/config.py")
+    parser = argparse.ArgumentParser(prog="python -m setup_server", description="Provision a new Discord server to match setup_server/config.py")
     parser.add_argument("--check", action="store_true", help="Report drift only, make no changes")
     parser.add_argument("--dry-run", action="store_true", help="Alias of --check for this release")
     args = parser.parse_args()

@@ -10,9 +10,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from ui.paginator import Paginator
-from ui.confirm import ConfirmView
-from ui.embed_editor import EmbedEditorView
+from core.ui.paginator import Paginator
+from core.ui.confirm import ConfirmView
+from core.ui.embed_editor import EmbedEditorView
 
 
 class TemplateCog(commands.Cog, name="Templates"):
@@ -115,7 +115,7 @@ class TemplateCog(commands.Cog, name="Templates"):
             actor_id=interaction.user.id,
         )
 
-        from ui.embed_editor import _build_status_embed
+        from core.ui.embed_editor import _build_status_embed
         status_embed = _build_status_embed(template_data, view._embed_index)
 
         await interaction.response.send_message(

@@ -45,7 +45,7 @@ call :stop_supervisor
 exit /b %errorlevel%
 
 :cmd_install
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install_scripts\windows\07-install-sv.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\07-install-sv.ps1"
 exit /b %errorlevel%
 
 REM ---------------------------------------------------------------- help

@@ -51,7 +51,7 @@ Versions are the pinned ones at the time of writing; licences were read from eac
 | [croniter](https://github.com/kiorky/croniter), python-dateutil, tzdata | MIT, Apache-2.0/BSD dual, Apache-2.0 | schedules, dates, time zones |
 | python-dotenv, requests, urllib3, certifi, idna, charset-normalizer, brotli, attrs, six, packaging, colorama, cffi, pycparser, pycryptodomex, audioop-lts | BSD-3 / Apache-2.0 / MIT / MPL-2.0 (certifi) / PSF-2.0 | supporting libraries |
 
-Development and maintenance only (not needed to run the bot): pytest (MIT), pytest-asyncio (Apache-2.0), pip-audit (Apache-2.0), PyInstaller (GPL-2.0 with bootloader exception; used only by the legacy `build_scripts/`).
+Development and maintenance only (not needed to run the bot): pytest (MIT), pytest-asyncio (Apache-2.0), pip-audit (Apache-2.0).
 
 ### Dashboard frontend (`server/frontend/package.json`)
 

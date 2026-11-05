@@ -27,7 +27,7 @@ from services.moderation_service import (
     timeout_minutes_error,
 )
 from services.log_router import build_embed
-from ui.confirm import ConfirmView
+from core.ui.confirm import ConfirmView
 
 log = logging.getLogger(__name__)
 

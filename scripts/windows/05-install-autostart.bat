@@ -11,14 +11,14 @@ echo.
 
 powershell -NoProfile -Command ^
   "$s = (New-Object -ComObject WScript.Shell).CreateShortcut('%STARTUP_DIR%\kick-bot.lnk');" ^
-  "$s.TargetPath = '%REPO_DIR%\run_bot.bat';" ^
+  "$s.TargetPath = '%REPO_DIR%\scripts\windows\run_bot.bat';" ^
   "$s.WorkingDirectory = '%REPO_DIR%';" ^
   "$s.WindowStyle = 1;" ^
   "$s.Save()"
 
 powershell -NoProfile -Command ^
   "$s = (New-Object -ComObject WScript.Shell).CreateShortcut('%STARTUP_DIR%\kick-bot-dashboard.lnk');" ^
-  "$s.TargetPath = '%REPO_DIR%\run_dashboard.bat';" ^
+  "$s.TargetPath = '%REPO_DIR%\scripts\windows\run_dashboard.bat';" ^
   "$s.WorkingDirectory = '%REPO_DIR%';" ^
   "$s.WindowStyle = 1;" ^
   "$s.Save()"

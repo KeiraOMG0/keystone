@@ -1,5 +1,5 @@
 """
-ui/confirm.py — Simple confirm/cancel view.
+core/ui/confirm.py — Simple confirm/cancel view.
 """
 from __future__ import annotations
 

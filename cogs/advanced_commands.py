@@ -13,7 +13,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from services.permission_service import VALID_PERMISSIONS
-from ui.paginator import Paginator
+from core.ui.paginator import Paginator
 
 # Built from the single source of truth so the slash-command choices can't
 # drift from PermissionService (tests/unit/test_permission_list_parity.py).

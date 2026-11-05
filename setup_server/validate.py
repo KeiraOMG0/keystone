@@ -2,7 +2,7 @@
 Read-only drift detector: compares the live guild against config.py and
 reports what's missing, without changing anything.
 
-Run standalone via `python setup_server.py --check`. Useful after manual
+Run standalone via `python -m setup_server --check`. Useful after manual
 edits in the Discord UI to see what's drifted from the desired state.
 """
 

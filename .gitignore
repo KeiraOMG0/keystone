@@ -34,10 +34,13 @@ archive/
 *.zip
 *.7z
 
-# Per-server state written by setup_server.py, and the private security audit
+# Per-server state written by setup_server (python -m setup_server), and the private security audit
 # of this deployment (describes its open risks)
 setup_server/server_state.json
 docs/SECURITY_AUDIT.md
 
 # Regenerable from the repo (npm run build in pot_server/server; also ignored by pot_server/.gitignore)
 pot_server/server/build/
+
+# Local developer utilities (not part of the project)
+tools/

@@ -21,7 +21,7 @@ Run them individually if you want to inspect each step, or just run
 ## Windows
 
 ```
-install_scripts\windows\install-all.bat
+scripts\windows\install-all.bat
 ```
 (or `install-all.ps1` directly from PowerShell). Individually-numbered
 `.bat` files are also provided if you'd rather run one step at a time by
@@ -30,13 +30,13 @@ double-click.
 ## macOS
 
 ```
-./install_scripts/macos/install-all.sh
+./scripts/macos/install-all.sh
 ```
 
 ## Linux
 
 ```
-./install_scripts/linux/install-all.sh
+./scripts/linux/install-all.sh
 ```
 Detects `apt`, `dnf`, `pacman`, or `zypper` automatically. If none of those
 are found, it prints manual-install instructions instead of guessing.

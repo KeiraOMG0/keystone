@@ -1,5 +1,5 @@
 """
-ui/embed_editor.py — Interactive embed editor View and its associated Modals.
+core/ui/embed_editor.py — Interactive embed editor View and its associated Modals.
 
 Opened when a staff member runs ``/template edit [name]``.  The editor shows a
 compact status-card embed for the template being edited and provides buttons

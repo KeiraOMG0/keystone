@@ -2,10 +2,10 @@
 REM Starts the full stack on boot/login: main bot (+ embedded internal API + db),
 REM the dashboard backend, and the cloudflare tunnel — each in its own window.
 REM Close a window to stop that process. Can be placed in shell:startup to run at login
-REM (install_scripts\windows\05-install-autostart.bat instead adds run_bot.bat and
+REM (scripts\windows\05-install-autostart.bat instead adds run_bot.bat and
 REM run_dashboard.bat shortcuts, without the tunnel).
 
-cd /d "%~dp0"
+cd /d "%~dp0..\.."
 
 if not exist ".env" (
     echo ERROR: .env not found in %cd%

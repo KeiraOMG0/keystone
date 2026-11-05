@@ -9,7 +9,7 @@
 $ErrorActionPreference = "Stop"
 
 # Resolve the repo root as two levels up from this script
-# (install_scripts/windows/this-file.ps1 -> repo root).
+# (scripts/windows/this-file.ps1 -> repo root).
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 Set-Location $RepoRoot
 

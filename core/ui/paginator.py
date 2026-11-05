@@ -1,5 +1,5 @@
 """
-ui/paginator.py — Reusable paginator View for discord.py.
+core/ui/paginator.py — Reusable paginator View for discord.py.
 """
 from __future__ import annotations
 
