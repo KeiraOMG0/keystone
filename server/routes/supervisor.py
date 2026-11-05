@@ -8,6 +8,11 @@
                                          unknown-/api 404 to everyone else, whatever the
                                          method or body); 202 {"queued", "message"},
                                          the result shows up in /status log_rotation.last_run
+  POST /api/supervisor/update-deps       {"mode": "check"|"apply", "reason"?}  OWNER ONLY (same
+                                         hidden-404 rules as rotate-logs); 202 {"queued", "mode",
+                                         "message"}; progress + result in /status dependency_update,
+                                         which GET /status shows to the owner only (the plan lists
+                                         vulnerable packages)
 
 DELIBERATE EXCEPTION to "the dashboard only calls the internal API": these
 routes call supervisor.py's loopback control API directly
@@ -37,14 +42,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 from server.db.models import Session
-from server.permissions.guards import owner_body, require_owner
+from server.permissions.guards import is_owner_session, owner_body, require_owner
 from server.routes.diagnostics import require_staff_even_if_bot_down, scrub
 from server.services import supervisor_client
 from server.services.supervisor_client import SupervisorError, SupervisorUnavailable
 
 router = APIRouter(prefix="/api/supervisor", tags=["supervisor"])
 
-_CONFLICT_ERRORS = {"restart_in_progress", "not_managed", "rotation_in_progress"}
+_CONFLICT_ERRORS = {"restart_in_progress", "not_managed", "rotation_in_progress", "update_in_progress"}
 
 
 class RestartBody(BaseModel):
@@ -53,6 +58,11 @@ class RestartBody(BaseModel):
 
 
 class RotateLogsBody(BaseModel):
+    reason: str | None = Field(default=None, max_length=300)
+
+
+class UpdateDepsBody(BaseModel):
+    mode: Literal["check", "apply"] = "check"
     reason: str | None = Field(default=None, max_length=300)
 
 
@@ -88,9 +98,13 @@ def _translate(exc: Exception) -> HTTPException:
 @router.get("/status")
 async def get_status(session: Session = Depends(require_staff_even_if_bot_down)) -> dict:
     try:
-        return scrub(await supervisor_client.get_status())
+        payload = scrub(await supervisor_client.get_status())
     except (SupervisorUnavailable, SupervisorError) as exc:
         raise _translate(exc)
+    if not is_owner_session(session) and isinstance(payload, dict):
+        # The dependency plan names vulnerable packages; only the owner can act on it.
+        payload.pop("dependency_update", None)
+    return payload
 
 
 @router.post("/restart", status_code=202)
@@ -145,3 +159,28 @@ async def rotate_logs(request: Request, session: Session = Depends(require_owner
     except (SupervisorUnavailable, SupervisorError) as exc:
         raise _translate(exc)
     return {"queued": bool(result.get("queued", True)), "message": str(result.get("message") or "")[:400]}
+
+
+@router.post("/update-deps", status_code=202)
+async def update_deps(request: Request, session: Session = Depends(require_owner)) -> dict:
+    """Owner only, hidden like rotate-logs (body read raw after require_owner).
+    "check" audits and reports what an update would do; "apply" also updates:
+    the frontend is rebuilt in place, and for Python packages or the PO-token
+    server the supervisor stops the bot AND this dashboard, so the page loses
+    its connection for a few minutes and the result shows up in /status once
+    both are back. Works while the bot is down (no bot call)."""
+    body = await owner_body(request, UpdateDepsBody)
+    assert isinstance(body, UpdateDepsBody)
+    requested_by = f"{session.discord_username or 'unknown'} ({session.discord_user_id})"
+    reason = (body.reason or "").strip() or None
+    try:
+        result = await supervisor_client.update_deps(
+            mode=body.mode, requested_by=requested_by, source="dashboard", reason=reason
+        )
+    except (SupervisorUnavailable, SupervisorError) as exc:
+        raise _translate(exc)
+    return {
+        "queued": bool(result.get("queued", True)),
+        "mode": body.mode,
+        "message": str(result.get("message") or "")[:400],
+    }

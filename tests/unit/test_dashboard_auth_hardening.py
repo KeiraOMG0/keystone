@@ -225,7 +225,7 @@ def _as(user_id: int | None, member: bool = True):
 
 
 HIDDEN = ["/api/debug/run", "/api/debug/actions", "/api/debug/health", "/api/debug/channels",
-          "/api/debug/fortnite/preview", "/api/supervisor/rotate-logs"]
+          "/api/debug/fortnite/preview", "/api/supervisor/rotate-logs", "/api/supervisor/update-deps"]
 BODIES = [None, b"{not json", b'{"reason": 5}', b'{"reason": "' + b"x" * 400 + b'"}', b'{"action": "x", "channel_id": "1"}']
 
 

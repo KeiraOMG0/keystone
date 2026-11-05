@@ -1363,6 +1363,8 @@ export interface SupervisorService {
   skip_reason: string | null
   next_start_in_s: number | null
   restart_pending: boolean
+  /** Set while the supervisor keeps it stopped on purpose (v2.2+: "dependency update"). */
+  held?: string | null
 }
 
 export interface SupervisorStatusResponse {

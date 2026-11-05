@@ -120,3 +120,86 @@ export function useSupervisorRotateLogs() {
       }),
   })
 }
+
+// ---------------------------------------------------------------------------
+// Dependency updates (supervisor.py >= v2.2, OWNER ONLY). GET /status only
+// includes `dependency_update` for the owner (the plan lists vulnerable packages).
+// ---------------------------------------------------------------------------
+
+export interface DependencyUpgrade {
+  package: string
+  from: string | null
+  to: string
+  /** Advisory ids, or "outdated (music)" for yt-dlp. */
+  why: string
+}
+
+export interface DependencyNpmPlan {
+  label: string
+  /** Packages `npm audit fix` can update without a major bump. */
+  fixable: string[]
+  manual: { package: string; fix: string | null }[]
+  ignored: number
+}
+
+export interface DependencyPlan {
+  python: DependencyUpgrade[]
+  python_no_fix: { package: string; version: string | null; ids: string[] }[]
+  npm: Record<string, DependencyNpmPlan>
+  min_severity: string
+}
+
+export interface DependencyStep {
+  name: string
+  ok: boolean
+  detail: string
+  seconds: number
+  /** Last output lines (scrubbed). Absent on the in-progress view. */
+  output?: string[]
+}
+
+export interface DependencyRun {
+  mode: "check" | "apply"
+  requested_by: string | null
+  source: string | null
+  reason: string | null
+  /** UTC ISO. */
+  at: string
+  finished_at: string | null
+  ok: boolean
+  plan: DependencyPlan | null
+  steps: DependencyStep[]
+  changes: string[]
+  manual: string[]
+  /** Services stopped for the update and started again. */
+  restarted: string[]
+  error: string | null
+}
+
+export interface DependencyUpdateStatus {
+  running: boolean
+  /** Queued by POST /update-deps, not yet started. */
+  pending: boolean
+  /** What the running update is doing now. */
+  step: string | null
+  current: Pick<DependencyRun, "mode" | "at" | "requested_by" | "steps"> | null
+  last_run: DependencyRun | null
+  /** Services held down right now. */
+  held: string[]
+}
+
+export type SupervisorStatusFull = SupervisorStatusWithRotation & { dependency_update?: DependencyUpdateStatus | null }
+
+/**
+ * POST /api/supervisor/update-deps (OWNER ONLY; 404 for everyone else). 202
+ * means queued; progress and the result appear in /status `dependency_update`.
+ */
+export function useSupervisorUpdateDeps() {
+  return useMutation({
+    mutationFn: (input: { mode: "check" | "apply"; reason?: string | null }) =>
+      apiFetch<{ queued: boolean; mode: string; message: string }>("/api/supervisor/update-deps", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+  })
+}

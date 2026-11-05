@@ -25,6 +25,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 server/frontend/dist/
+# supervisor.py dependency updates build into dist-next/ and swap dist/ aside to dist-old/
+server/frontend/dist-next/
+server/frontend/dist-old/
 
 # Archives / old local config that may hold secrets (whole folder: old .env, databases, third-party copies)
 archive/

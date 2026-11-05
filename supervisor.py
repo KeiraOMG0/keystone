@@ -24,8 +24,15 @@ the Cloudflare tunnel. Replaces start_all.bat when you want auto-restart + alert
     POST /restart   {"target","requested_by","source","reason","delay_s"}
     GET  /logs?service=bot&lines=N   (in-memory output tail, secrets scrubbed)
     POST /rotate-logs {"requested_by","source","reason"}   (202 queued; result in /status)
+    POST /update-deps {"mode": "check"|"apply","requested_by","source","reason"}
+                                     (202 queued; progress + result in /status dependency_update)
   The HTTP thread never touches a child process: it queues a request that the
   main loop applies after a short delay (so the requester's reply gets out first).
+- Dependency updates (DependencyUpdater, owner-only in the dashboard): audit like
+  the bot's weekly audit, then npm audit fix + rebuild the dashboard frontend (no
+  restart), and for Python packages / the PO-token server stop and hold the bot
+  and dashboard, install, run pip check + the tests (roll back on failure), pin
+  the versions in requirements.txt and start them again.
 - Weekly log rotation (LogRotator): Mondays 04:00 local time, or as soon as the
   supervisor notices it is overdue. bot/dashboard/tunnel/supervisor.log and the
   bot's bot_startup.log are moved to logs/archive/<name>.<YYYY-MM-DD>.log.gz and
@@ -72,7 +79,7 @@ PY = str(ROOT / "venv" / "Scripts" / "python.exe")
 CREATE_NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 NEW_GROUP = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
 
-VERSION = "2.1"               # bumped when the control API changes shape (2.1: log rotation)
+VERSION = "2.2"               # bumped when the control API changes shape (2.1: log rotation, 2.2: update-deps)
 BACKOFF_START, BACKOFF_MAX = 3.0, 120.0
 STABLE_AFTER = 120.0          # uptime that counts as "healthy" and resets backoff
 HEALTH_EVERY = 20.0
@@ -441,6 +448,7 @@ class Service:
         self.requested: dict | None = None      # in-flight requested restart (set when we kill it)
         self.logfile = LogFile(f"{name}.log")  # shared by the pump(s) and the log rotator
         self.before_start = None                # main(): rotates logs deferred until this child is down
+        self.hold: str | None = None            # DependencyUpdater: kept stopped (no restart, no alert) while set
 
     def start(self) -> None:
         if self.port and port_open(self.port):
@@ -515,6 +523,8 @@ class Service:
 
     def poll(self, now: float) -> None:
         if self.proc is None:
+            if self.hold:
+                return  # stopped on purpose (dependency update); released by DependencyUpdater.tick
             if now >= self.next_start:
                 if self.needs and not self.needs():
                     self.waiting = True
@@ -589,6 +599,13 @@ class Service:
         self.proc = None
         now = time.time()
         req, self.requested = self.requested, None
+        if self.hold:
+            # Stopped by the dependency updater: not a crash and not a restart.
+            # It stays down until the update releases it.
+            self.next_start = now
+            self.last_exit = {"reason": f"stopped for the {self.hold}", "at": iso(now)}
+            slog(f"{self.name}: stopped for the {self.hold} after {uptime:.0f}s; held until it finishes")
+            return
         if req is not None and now - req.get("at", 0) <= REQUEST_KILL_WINDOW:
             # Requested restart: not a crash. No backoff growth, no quick-crash
             # count, info alert without a ping.
@@ -1066,6 +1083,676 @@ class LogRotator:
 
 
 # ---------------------------------------------------------------------------
+# Dependency updates (v2.2): POST /update-deps, Diagnostics "Dependency updates"
+# ---------------------------------------------------------------------------
+
+DEPS_STATE_FILE = "dependency_update.json"   # in LOG_DIR: the last run, survives a supervisor restart
+DEPS_BACKUP_DIR = "deps-backup"              # in LOG_DIR: package files + pip freeze taken before an apply
+DEPS_COOLDOWN = 60.0          # between accepted POST /update-deps requests
+DEPS_STOP_WAIT = 45.0         # bot + dashboard must be down by then (the kill is retried after KILL_CONFIRM_AFTER)
+DEPS_TAIL_LINES = 40          # output lines kept per step
+DEPS_HOLD = "dependency update"
+DEPS_MODES = ("check", "apply")
+DEPS_HOLD_NAMES = ("bot", "dashboard")       # share the venv, so both are down while pip runs
+DEPS_TIMEOUT = {"audit": 300, "npm": 900, "build": 900, "pip": 900, "tests": 1200}
+DEPS_SEVERITIES = ("critical", "high", "moderate", "low", "info")
+# key, label (same labels as services/dependency_audit_service.py), project dir
+DEPS_NPM_PROJECTS = (
+    ("frontend", "dashboard frontend", ("server", "frontend")),
+    ("pot_server", "PO-token server", ("pot_server", "server")),
+)
+DEPS_REQUIREMENTS = (("requirements.txt",), ("server", "requirements.txt"))
+_REQ_PIN_RE = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(\[[^\]]*\])?==([^\s;#]+)(.*)$")
+_FREEZE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*==[^\s;#]+$")
+
+
+def norm_pkg(name: str) -> str:
+    """PEP 503 normalised package name (yt_dlp, YT-DLP, yt.dlp -> yt-dlp)."""
+    return re.sub(r"[-_.]+", "-", str(name)).lower()
+
+
+def _vkey(v: str):
+    return [(0, int(p), "") if p.isdigit() else (1, 0, p) for p in re.split(r"[.\-+]", str(v))]
+
+
+def plan_python(raw: str, ignore: set[str] = frozenset()) -> tuple[list[dict], list[dict]]:
+    """pip-audit --format json -> (upgrades [{package, from, to, why}], no_fix
+    [{package, version, ids}]). Raises ValueError on output that is not JSON."""
+    data = json.loads(raw)
+    deps = data.get("dependencies", []) if isinstance(data, dict) else data
+    upgrades, no_fix = [], []
+    for dep in deps or []:
+        vulns = dep.get("vulns") or []
+        name = str(dep.get("name") or "")
+        if not vulns or not name or norm_pkg(name) in ignore:
+            continue
+        ids = sorted({str(v.get("id") or "?") for v in vulns})
+        fixes = sorted({f for v in vulns for f in (v.get("fix_versions") or [])}, key=_vkey)
+        if fixes:
+            upgrades.append({"package": name, "from": dep.get("version"), "to": fixes[-1], "why": ", ".join(ids[:3])})
+        else:
+            no_fix.append({"package": name, "version": dep.get("version"), "ids": ids[:5]})
+    return upgrades, no_fix
+
+
+def ytdlp_upgrade(raw: str) -> dict | None:
+    """pip list --outdated --format json -> an upgrade entry when yt-dlp is behind
+    (music breaks when it falls behind YouTube, vulnerability or not)."""
+    for pkg in json.loads(raw or "[]"):
+        if norm_pkg(pkg.get("name", "")) == "yt-dlp" and pkg.get("latest_version"):
+            return {"package": "yt-dlp", "from": pkg.get("version"), "to": pkg["latest_version"],
+                    "why": "outdated (music)"}
+    return None
+
+
+def merge_upgrades(upgrades: list[dict], extra: dict | None) -> list[dict]:
+    if not extra:
+        return upgrades
+    for u in upgrades:
+        if norm_pkg(u["package"]) == norm_pkg(extra["package"]):
+            if _vkey(extra["to"]) > _vkey(u["to"]):
+                u["to"] = extra["to"]
+            return upgrades
+    return upgrades + [extra]
+
+
+def plan_npm(raw: str, minimum: str = "moderate", ignore: set[str] = frozenset()) -> dict:
+    """npm audit --json -> {"fixable": [names `npm audit fix` can update without a
+    major bump], "manual": [{package, fix}], "ignored": n}. Same severity floor and
+    ignore list as the weekly audit. Raises ValueError on output that is not JSON."""
+    data = json.loads(raw)
+    floor = DEPS_SEVERITIES.index(minimum) if minimum in DEPS_SEVERITIES else 2
+    out: dict = {"fixable": [], "manual": [], "ignored": 0}
+    for name, vuln in sorted((data.get("vulnerabilities") or {}).items()):
+        sev = str(vuln.get("severity") or "")
+        if (sev in DEPS_SEVERITIES and DEPS_SEVERITIES.index(sev) > floor) or norm_pkg(name) in ignore:
+            out["ignored"] += 1
+            continue
+        fix = vuln.get("fixAvailable")
+        if fix is True or (isinstance(fix, dict) and not fix.get("isSemVerMajor")):
+            out["fixable"].append(name)
+        elif isinstance(fix, dict):
+            out["manual"].append({"package": name, "fix": f"{fix.get('name')}@{fix.get('version')} (major)"})
+        else:
+            out["manual"].append({"package": name, "fix": None})
+    return out
+
+
+def update_pins(text: str, versions: dict[str, str]) -> tuple[str, list[str]]:
+    """Rewrite `name==x` (and `name[extra]==x`) lines whose normalised name is in
+    `versions` (normalised name -> new version). Returns (text, names changed)."""
+    out, changed = [], []
+    for line in text.splitlines(keepends=True):
+        body = line.rstrip("\r\n")
+        eol = line[len(body):]
+        m = _REQ_PIN_RE.match(body)
+        if m:
+            n = norm_pkg(m.group(1))
+            if n in versions and m.group(3) != versions[n]:
+                body = f"{m.group(1)}{m.group(2) or ''}=={versions[n]}{m.group(4)}"
+                changed.append(n)
+            elif n in versions:
+                changed.append(n)  # already at that version: counts as pinned
+        out.append(body + eol)
+    return "".join(out), changed
+
+
+def freeze_lines(text: str) -> list[str]:
+    """`pip freeze` output -> only the plain `name==version` lines (no -e, no @ URLs)."""
+    return [ln.strip() for ln in text.splitlines() if _FREEZE_RE.match(ln.strip())]
+
+
+def lock_changes(before: str, after: str, limit: int = 25) -> list[str]:
+    """Two package-lock.json texts -> ["name 1.0.0 -> 1.0.1", ...] for changed,
+    added and removed packages (top-level and nested node_modules entries)."""
+    def versions(raw: str) -> dict[str, str]:
+        try:
+            pkgs = json.loads(raw).get("packages") or {}
+        except (ValueError, AttributeError):
+            return {}
+        out = {}
+        for path, meta in pkgs.items():
+            if path and isinstance(meta, dict) and meta.get("version"):
+                out[path.split("node_modules/")[-1] + ("" if path.count("node_modules/") <= 1 else " (nested)")] = meta["version"]
+        return out
+    a, b = versions(before), versions(after)
+    lines = []
+    for name in sorted(set(a) | set(b)):
+        if a.get(name) != b.get(name):
+            lines.append(f"{name} {a.get(name) or '(new)'} -> {b.get(name) or '(removed)'}")
+    return lines[:limit] + ([f"... and {len(lines) - limit} more"] if len(lines) > limit else [])
+
+
+def deps_env() -> dict[str, str]:
+    """Environment for pip/npm/pytest: the supervisor's real environment WITHOUT
+    the .env values (tests must see what a developer's shell sees)."""
+    return dict(_BASE_ENV, PYTHONIOENCODING="utf-8", PYTHONUNBUFFERED="1")
+
+
+def run_cmd(cmd: list[str], cwd: Path, timeout: float, env: dict | None = None) -> tuple[int | None, str, str]:
+    """Run a command to completion -> (exit code, stdout, stderr). The code is
+    None when it could not start or timed out (its whole tree is killed then)."""
+    try:
+        proc = subprocess.Popen(cmd, cwd=str(cwd), env=env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, creationflags=CREATE_NO_WINDOW | NEW_GROUP)
+    except OSError as e:
+        return None, "", f"could not run {Path(cmd[0]).name}: {e}"
+    dec = lambda b: (b or b"").decode("utf-8", errors="replace")  # noqa: E731
+    try:
+        out, err = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        if os.name == "nt":
+            subprocess.run(["taskkill", "/PID", str(proc.pid), "/T", "/F"], capture_output=True,
+                           creationflags=CREATE_NO_WINDOW, timeout=30)
+        else:  # pragma: no cover - the live deployment is Windows
+            proc.kill()
+        try:
+            out, err = proc.communicate(timeout=30)
+        except subprocess.TimeoutExpired:
+            out, err = b"", b""
+        return None, dec(out), dec(err) + f"\n(timed out after {timeout:.0f}s and was stopped)"
+    return proc.returncode, dec(out), dec(err)
+
+
+class DependencyUpdater:
+    """Owner-requested dependency updates (POST /update-deps, the dashboard's
+    Diagnostics -> Services "Dependency updates" panel, `supervisor.py update-deps`).
+
+    A run (worker thread) first audits like the bot's weekly audit
+    (services/dependency_audit_service.py: pip-audit on the venv, `pip list
+    --outdated` for yt-dlp, `npm audit --omit=dev` per project, same
+    DEPENDENCY_AUDIT_MIN_SEVERITY / DEPENDENCY_AUDIT_IGNORE). mode "check" stops
+    there and reports the plan. mode "apply" then:
+
+    * Dashboard frontend (anything `npm audit fix` can fix without a major
+      bump): `npm audit fix`, `tsc -b`, `vite build` into dist-next/, then
+      dist-next/ replaces dist/. No restart: the dashboard serves dist/ from disk.
+      A failed type-check or build restores package.json + package-lock.json and
+      runs `npm ci`; dist/ was never touched.
+    * Python (pip-audit fix versions, plus yt-dlp when outdated) and the
+      PO-token server (the bot's Node child, which holds its node_modules open):
+      the bot and the dashboard are stopped and HELD (Service.hold: no restart,
+      no crash alert) by the main loop (tick). PO-token server: `npm audit fix`
+      + `tsc`, restored on failure. Python: `pip freeze` is saved, then `pip
+      install name==fix ...`, `pip check` and the full test suite; if any of
+      them fails the saved versions are reinstalled. On success the new
+      versions are pinned in requirements.txt / server/requirements.txt (a
+      package in neither is appended to requirements.txt). Then both are
+      released and start as usual (the dashboard after the bot's internal API).
+
+    Major npm upgrades and vulnerabilities without a fix are never applied;
+    they are listed as manual work. The result (plan, steps with scrubbed
+    output tails, changes) is in /status `dependency_update.last_run`, saved to
+    logs/supervisor/dependency_update.json, and an apply posts one info (or
+    warning) alert without a ping. One run at a time.
+    """
+
+    def __init__(self, services=(), *, root: Path | None = None, log_dir: Path | None = None,
+                 python: str | None = None, runner=None, which=None) -> None:
+        self.services = {s.name: s for s in services}
+        self.root = Path(root or ROOT)
+        self.log_dir = Path(log_dir or LOG_DIR)
+        self.python = python or PY
+        self.runner = runner or run_cmd
+        self.which = which or shutil.which
+        self._lock = threading.Lock()
+        self.running = False
+        self.step: str | None = None
+        self.current: dict | None = None
+        self.last_run: dict | None = self._load()
+        # hold handshake: the worker sets _hold_wanted, the main loop (tick) stops,
+        # holds and later releases the services and reports through _hold_event.
+        self._hold_wanted = False
+        self._hold_state = "released"   # stopping | down | failed | released
+        self._hold_error: str | None = None
+        self._hold_since = 0.0
+        self._hold_retried = False
+        self._hold_event = threading.Event()
+
+    # ---- state -----------------------------------------------------------------
+    def _state_path(self) -> Path:
+        return self.log_dir / DEPS_STATE_FILE
+
+    def _load(self) -> dict | None:
+        try:
+            data = json.loads(self._state_path().read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
+        except (OSError, ValueError) as e:
+            slog(f"dependency update: cannot read {DEPS_STATE_FILE} ({type(e).__name__}: {e})")
+            return None
+        last = data.get("last_run") if isinstance(data, dict) else None
+        return last if isinstance(last, dict) else None
+
+    def _save(self, run: dict) -> None:
+        tmp = self._state_path().with_name(DEPS_STATE_FILE + ".tmp")
+        try:
+            self.log_dir.mkdir(parents=True, exist_ok=True)
+            tmp.write_text(json.dumps({"version": 1, "last_run": run}, indent=2), encoding="utf-8")
+            os.replace(tmp, self._state_path())
+        except OSError as e:
+            slog(f"dependency update: cannot save {DEPS_STATE_FILE} ({type(e).__name__}: {e})")
+
+    def is_running(self) -> bool:
+        with self._lock:
+            return self.running
+
+    def status(self) -> dict:
+        with self._lock:
+            cur = self.current
+            return {
+                "running": self.running,
+                "step": self.step,
+                "current": None if cur is None else {
+                    "mode": cur["mode"], "at": cur["at"], "requested_by": cur["requested_by"],
+                    "steps": [{k: st[k] for k in ("name", "ok", "detail", "seconds")} for st in cur["steps"]],
+                },
+                "last_run": json.loads(json.dumps(self.last_run)) if self.last_run else None,
+                "held": [n for n, s in self.services.items() if s.hold],
+            }
+
+    # ---- main thread ---------------------------------------------------------------
+    def tick(self, now: float | None = None) -> None:
+        """Stop and hold bot + dashboard while a run needs them down; release them
+        after. MAIN THREAD ONLY (the only place this class touches a Service)."""
+        try:
+            now = time.time() if now is None else now
+            with self._lock:
+                wanted, state = self._hold_wanted, self._hold_state
+            svcs = [self.services[n] for n in DEPS_HOLD_NAMES if n in self.services]
+            if wanted and state == "stopping":
+                self._stop_tick(svcs, now)
+            elif not wanted and any(s.hold for s in svcs):
+                for s in svcs:
+                    s.hold = None
+                    s.backoff, s.quick_crashes = BACKOFF_START, 0
+                    s.next_start = now
+                slog("dependency update: done; starting the bot and the dashboard again")
+        except Exception as e:  # never let the updater kill the main loop
+            slog(f"dependency update: tick error: {type(e).__name__}: {e}")
+
+    def _stop_tick(self, svcs: list, now: float) -> None:
+        def finish(state: str, error: str | None = None) -> None:
+            with self._lock:
+                self._hold_state, self._hold_error = state, error
+            self._hold_event.set()
+
+        outside = [s.name for s in svcs if s.proc is None and s.skip_reason == "port in use"]
+        if outside:
+            return finish("failed", f"{' and '.join(outside)} runs outside the supervisor (its port is held by "
+                                    "another process); close that copy first")
+        for s in svcs:
+            if s.hold is None:
+                s.hold = DEPS_HOLD
+                if s.proc is not None and s.proc.poll() is None:
+                    slog(f"{s.name}: stopping pid {s.proc.pid} for the dependency update")
+                    s.kill_tree()  # the next poll sees the exit (_exited: held, no alert)
+        busy = [s for s in svcs if s.proc is not None]
+        if not busy and not any(s.port and port_open(s.port) for s in svcs):
+            return finish("down")
+        if busy and not self._hold_retried and now - self._hold_since >= KILL_CONFIRM_AFTER:
+            self._hold_retried = True
+            for s in busy:
+                slog(f"{s.name}: still running {KILL_CONFIRM_AFTER:.0f}s after the stop - retrying the kill once")
+                s.kill_tree()
+        if now - self._hold_since >= DEPS_STOP_WAIT:
+            names = [s.name for s in busy] or [s.name for s in svcs if s.port and port_open(s.port)]
+            finish("failed", f"{' and '.join(names)} did not stop within {DEPS_STOP_WAIT:.0f}s")
+
+    # ---- worker side of the handshake ----------------------------------------------------
+    def _stop_services(self) -> str | None:
+        with self._lock:
+            self._hold_wanted, self._hold_state, self._hold_error = True, "stopping", None
+            self._hold_since, self._hold_retried = time.time(), False
+            self._hold_event.clear()
+        if not self._hold_event.wait(DEPS_STOP_WAIT + 15):
+            return "the supervisor's main loop did not answer"
+        with self._lock:
+            return None if self._hold_state == "down" else (self._hold_error or "the services did not stop")
+
+    def _release(self) -> None:
+        with self._lock:
+            self._hold_wanted, self._hold_state = False, "released"
+
+    # ---- the run (worker thread) -------------------------------------------------------
+    def run_async(self, mode: str, *, requested_by: str | None = None, source: str | None = None,
+                  reason: str | None = None) -> bool:
+        with self._lock:
+            if self.running:
+                return False
+            self.running = True
+        threading.Thread(target=self._run, args=(mode, requested_by, source, reason),
+                         name="dependency-update", daemon=True).start()
+        return True
+
+    def run(self, mode: str = "check", *, requested_by: str | None = None, source: str | None = None,
+            reason: str | None = None) -> dict | None:
+        """Synchronous run (tests). None when one is already running. An apply that
+        needs the services stopped also needs tick() called from another thread."""
+        with self._lock:
+            if self.running:
+                return None
+            self.running = True
+        return self._run(mode, requested_by, source, reason)
+
+    def _run(self, mode, requested_by, source, reason) -> dict:
+        run: dict = {"mode": mode, "requested_by": requested_by, "source": source, "reason": reason,
+                     "at": iso(time.time()), "finished_at": None, "ok": False, "plan": None, "steps": [],
+                     "changes": [], "manual": [], "restarted": [], "error": None}
+        with self._lock:
+            self.current = run
+        who = f" requested by {requested_by} via {source}{f': {reason}' if reason else ''}" if requested_by else ""
+        slog(f"dependency update: starting ({mode}{who})")
+        try:
+            env = deps_env()
+            plan = self._plan(run, env)
+            run["plan"] = plan
+            run["manual"] = self._manual(plan)
+            if mode == "apply":
+                self._apply(run, plan, env)
+        except Exception as e:  # never let a run take the supervisor down
+            run["error"] = f"{type(e).__name__}: {e}"
+            slog(f"dependency update: error: {run['error']}")
+        finally:
+            with self._lock:
+                held = self._hold_wanted or self._hold_state != "released"
+            if held:
+                run["restarted"] = [n for n in DEPS_HOLD_NAMES if n in self.services and self.services[n].hold]
+                self._release()
+            run["ok"] = run["error"] is None and all(st["ok"] for st in run["steps"])
+            run["finished_at"] = iso(time.time())
+            self._save(run)
+            with self._lock:
+                self.last_run, self.current, self.running, self.step = run, None, False, None
+            self._report(run)
+        return run
+
+    def _apply(self, run: dict, plan: dict, env: dict) -> None:
+        npm = plan["npm"]
+        if (npm.get("frontend") or {}).get("fixable"):
+            self._update_npm(run, "frontend", env)
+        pot = bool((npm.get("pot_server") or {}).get("fixable"))
+        if not (plan["python"] or pot):
+            if not run["changes"]:
+                run["changes"].append("Nothing to update automatically.")
+            return
+        t0 = time.time()
+        self._set_step("stopping the bot and the dashboard")
+        err = self._stop_services()
+        self._record(run, "stop bot and dashboard", err is None, err or "both stopped and held", t0)
+        if err is not None:
+            run["changes"].append(f"Python / PO-token server updates skipped: {err}.")
+            return
+        if pot:
+            self._update_npm(run, "pot_server", env)
+        if plan["python"]:
+            self._update_python(run, plan["python"], env)
+
+    # ---- helpers ----------------------------------------------------------------------
+    def _set_step(self, name: str) -> None:
+        with self._lock:
+            self.step = name
+
+    def _record(self, run: dict, name: str, ok: bool, detail: str, t0: float, output: str = "") -> None:
+        lines = [ln for ln in output.splitlines() if ln.strip()][-DEPS_TAIL_LINES:]
+        run["steps"].append({"name": name, "ok": bool(ok), "detail": clean_text(detail, 500),
+                             "seconds": round(time.time() - t0, 1), "output": scrub_lines(lines)})
+        slog(f"dependency update: {name}: {'ok' if ok else 'FAILED'} - {clean_text(detail, 300)}")
+
+    def _exec(self, run: dict, name: str, cmd: list[str], cwd: Path, timeout: float, env: dict,
+              ok_detail: str = "done") -> bool:
+        self._set_step(name)
+        t0 = time.time()
+        code, out, err = self.runner(cmd, cwd, timeout, env)
+        ok = code == 0
+        detail = ok_detail if ok else ("did not finish" if code is None else f"exit code {code}")
+        self._record(run, name, ok, detail, t0, out + ("\n" + err if err else ""))
+        return ok
+
+    def _config(self) -> tuple[str, set[str]]:
+        env = child_env(self.root / ".env")  # fresh .env, like the bot's audit sees it
+        minimum = env.get("DEPENDENCY_AUDIT_MIN_SEVERITY", "moderate").strip().lower()
+        ignore = {norm_pkg(p.strip()) for p in env.get("DEPENDENCY_AUDIT_IGNORE", "").split(",") if p.strip()}
+        return (minimum if minimum in DEPS_SEVERITIES else "moderate"), ignore
+
+    def _project_dir(self, key: str) -> Path:
+        parts = next(p for k, _, p in DEPS_NPM_PROJECTS if k == key)
+        return self.root.joinpath(*parts)
+
+    def _plan(self, run: dict, env: dict) -> dict:
+        minimum, ignore = self._config()
+        plan: dict = {"python": [], "python_no_fix": [], "npm": {}, "min_severity": minimum}
+        py, root = self.python, self.root
+        # Python: pip-audit (exit code 1 just means "found something"; the JSON decides)
+        self._set_step("auditing Python packages (pip-audit)")
+        t0 = time.time()
+        code, out, err = self.runner([py, "-m", "pip_audit", "--format", "json", "--progress-spinner", "off"],
+                                     root, DEPS_TIMEOUT["audit"], env)
+        try:
+            plan["python"], plan["python_no_fix"] = plan_python(out, ignore)
+            self._record(run, "audit Python (pip-audit)", True,
+                         f"{len(plan['python'])} to upgrade, {len(plan['python_no_fix'])} without a fix yet", t0, err)
+        except ValueError:
+            self._record(run, "audit Python (pip-audit)", False,
+                         "pip-audit did not run (installed in the venv? network?)", t0, out + "\n" + err)
+        self._set_step("checking yt-dlp")
+        t0 = time.time()
+        code, out, err = self.runner([py, "-m", "pip", "list", "--outdated", "--format", "json",
+                                      "--disable-pip-version-check"], root, DEPS_TIMEOUT["audit"], env)
+        try:
+            yt = ytdlp_upgrade(out)
+            if yt and norm_pkg(yt["package"]) not in ignore:
+                plan["python"] = merge_upgrades(plan["python"], yt)
+            self._record(run, "check yt-dlp", True, f"yt-dlp {yt['from']} -> {yt['to']}" if yt else "up to date", t0)
+        except ValueError:
+            self._record(run, "check yt-dlp", False, "pip list --outdated failed", t0, out + "\n" + err)
+        # npm projects
+        npm = self.which("npm")
+        for key, label, _ in DEPS_NPM_PROJECTS:
+            path = self._project_dir(key)
+            if not (path / "package-lock.json").is_file():
+                continue
+            t0 = time.time()
+            if not npm:
+                self._record(run, f"audit {label} (npm)", False, "npm not found on PATH", t0)
+                continue
+            self._set_step(f"auditing {label} (npm audit)")
+            code, out, err = self.runner([npm, "audit", "--omit=dev", "--json"], path, DEPS_TIMEOUT["audit"], env)
+            try:
+                p = plan_npm(out, minimum, ignore)
+                plan["npm"][key] = dict(p, label=label)
+                self._record(run, f"audit {label} (npm)", True,
+                             f"{len(p['fixable'])} fixable, {len(p['manual'])} need a manual upgrade", t0, err)
+            except ValueError:
+                self._record(run, f"audit {label} (npm)", False, "npm audit failed", t0, out + "\n" + err)
+        return plan
+
+    @staticmethod
+    def _manual(plan: dict) -> list[str]:
+        out = [f"Python: {p['package']} {p.get('version') or ''} has no fixed version yet ({', '.join(p['ids'])})"
+               for p in plan["python_no_fix"]]
+        for proj in plan["npm"].values():
+            for m in proj["manual"]:
+                out.append(f"{proj['label']}: {m['package']} " + (f"needs {m['fix']}" if m["fix"] else "has no fix yet"))
+        return out
+
+    def _update_npm(self, run: dict, key: str, env: dict) -> None:
+        label = next(lbl for k, lbl, _ in DEPS_NPM_PROJECTS if k == key)
+        path = self._project_dir(key)
+        npm, npx = self.which("npm"), self.which("npx")
+        if not npm or not npx:
+            self._record(run, f"update {label}", False, "npm/npx not found on PATH", time.time())
+            return
+        backup = self.log_dir / DEPS_BACKUP_DIR / key
+        backup.mkdir(parents=True, exist_ok=True)
+        files = ("package.json", "package-lock.json")
+        for f in files:
+            shutil.copy2(path / f, backup / f)
+        before = (path / "package-lock.json").read_text(encoding="utf-8")
+        self._set_step(f"npm audit fix ({label})")
+        t0 = time.time()
+        code, out, err = self.runner([npm, "audit", "fix", "--no-fund"], path, DEPS_TIMEOUT["npm"], env)
+        after = (path / "package-lock.json").read_text(encoding="utf-8")
+        changed = lock_changes(before, after)
+        if before == after:
+            # npm exits non-zero when vulnerabilities remain, so only "nothing changed" + an error is a failure
+            ok = code == 0
+            self._record(run, f"npm audit fix ({label})", ok,
+                         "nothing changed" if ok else "failed; nothing changed", t0, out + "\n" + err)
+            if ok:
+                run["changes"].append(f"{label}: npm audit fix changed nothing.")
+            return
+        self._record(run, f"npm audit fix ({label})", True, f"{len(changed)} package(s) changed", t0, out + "\n" + err)
+        built = (self._build_frontend(run, path, npx, env) if key == "frontend"
+                 else self._exec(run, f"build {label} (tsc)", [npx, "--no-install", "tsc"], path,
+                                 DEPS_TIMEOUT["build"], env))
+        if built is True:
+            run["changes"].append(f"{label}: updated {', '.join(changed)}"
+                                  + (" (rebuilt; reload open dashboard tabs)" if key == "frontend" else " (rebuilt)"))
+            return
+        if built == "kept":
+            run["changes"].append(f"{label}: updated {', '.join(changed)}, but dist/ could not be replaced; "
+                                  "run `npm run build` in server/frontend.")
+            return
+        # failed type-check / build: put the package files back and reinstall them
+        for f in files:
+            shutil.copy2(backup / f, path / f)
+        ok = self._exec(run, f"roll back {label} (npm ci)", [npm, "ci", "--no-audit", "--no-fund"], path,
+                        DEPS_TIMEOUT["npm"], env, "restored the previous package versions")
+        if ok and key == "pot_server":
+            ok = self._exec(run, f"rebuild {label} after rollback", [npx, "--no-install", "tsc"], path,
+                            DEPS_TIMEOUT["build"], env)
+        run["changes"].append(f"{label}: the update broke the build, so it was rolled back"
+                              + ("" if ok else " (the rollback ALSO failed: run `npm ci` there by hand)") + ".")
+
+    def _build_frontend(self, run: dict, path: Path, npx: str, env: dict):
+        """tsc -b, vite build into dist-next/, then swap it in. True, False (build
+        failed; dist/ untouched) or "kept" (built but dist/ could not be replaced)."""
+        nxt = path / "dist-next"
+        shutil.rmtree(nxt, ignore_errors=True)
+        if not self._exec(run, "type-check dashboard frontend (tsc -b)", [npx, "--no-install", "tsc", "-b"], path,
+                          DEPS_TIMEOUT["build"], env):
+            return False
+        if not self._exec(run, "build dashboard frontend (vite)",
+                          [npx, "--no-install", "vite", "build", "--outDir", "dist-next", "--emptyOutDir"],
+                          path, DEPS_TIMEOUT["build"], env) or not (nxt / "index.html").is_file():
+            shutil.rmtree(nxt, ignore_errors=True)
+            return False
+        t0 = time.time()
+        err = self._swap_dist(path)
+        self._record(run, "deploy dashboard frontend", err is None, err or "dist/ replaced", t0)
+        if err:
+            shutil.rmtree(nxt, ignore_errors=True)
+            return "kept"
+        return True
+
+    @staticmethod
+    def _swap_dist(path: Path) -> str | None:
+        dist, old, nxt = path / "dist", path / "dist-old", path / "dist-next"
+        shutil.rmtree(old, ignore_errors=True)
+        last: OSError | None = None
+        for _ in range(20):  # the dashboard may be reading a file in dist/ right now
+            try:
+                if dist.exists():
+                    os.rename(dist, old)
+                break
+            except OSError as e:
+                last = e
+                time.sleep(0.5)
+        else:
+            return f"could not move dist/ aside ({last})"
+        try:
+            os.rename(nxt, dist)
+        except OSError as e:
+            try:
+                os.rename(old, dist)
+            except OSError:
+                pass
+            return f"could not move dist-next/ into place ({e})"
+        shutil.rmtree(old, ignore_errors=True)
+        return None
+
+    def _update_python(self, run: dict, upgrades: list[dict], env: dict) -> None:
+        py, root = self.python, self.root
+        self._set_step("recording installed Python packages")
+        t0 = time.time()
+        code, out, err = self.runner([py, "-m", "pip", "freeze", "--disable-pip-version-check"], root,
+                                     DEPS_TIMEOUT["pip"], env)
+        pins = freeze_lines(out) if code == 0 else []
+        if not pins:
+            self._record(run, "record installed versions (pip freeze)", False, "pip freeze failed; nothing changed",
+                         t0, err)
+            return
+        backup = self.log_dir / DEPS_BACKUP_DIR
+        backup.mkdir(parents=True, exist_ok=True)
+        freeze = backup / "pip-freeze-before.txt"
+        freeze.write_text("\n".join(pins) + "\n", encoding="utf-8")
+        self._record(run, "record installed versions (pip freeze)", True, f"{len(pins)} packages saved", t0)
+        specs = [f"{u['package']}=={u['to']}" for u in upgrades]
+        pip = [py, "-m", "pip", "--disable-pip-version-check", "--no-input"]
+        ok = (self._exec(run, "install updates (pip)", pip + ["install", *specs], root, DEPS_TIMEOUT["pip"], env,
+                         ", ".join(specs))
+              and self._exec(run, "pip check", pip + ["check"], root, DEPS_TIMEOUT["pip"], env, "no broken requirements")
+              and self._exec(run, "run the test suite (pytest)", [py, "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider"],
+                             root, DEPS_TIMEOUT["tests"], env, "all tests passed"))
+        if not ok:
+            back = self._exec(run, "roll back Python packages", pip + ["install", "-r", str(freeze)], root,
+                              DEPS_TIMEOUT["pip"], env, "previous versions reinstalled")
+            run["changes"].append("Python: the update failed a check, so it was rolled back"
+                                  + ("" if back else f" (the rollback ALSO failed: reinstall from {freeze})") + ".")
+            return
+        self._set_step("pinning the new versions")
+        t0 = time.time()
+        versions = {norm_pkg(u["package"]): u["to"] for u in upgrades}
+        pinned: set[str] = set()
+        files = []
+        for parts in DEPS_REQUIREMENTS:
+            f = root.joinpath(*parts)
+            try:
+                text = f.read_bytes().decode("utf-8")  # bytes: keep the file's own line endings
+            except (OSError, UnicodeDecodeError):
+                continue
+            new, names = update_pins(text, versions)
+            pinned.update(names)
+            if new != text:
+                f.write_bytes(new.encode("utf-8"))
+                files.append("/".join(parts))
+        missing = [u for u in upgrades if norm_pkg(u["package"]) not in pinned]
+        if missing:
+            f = root / "requirements.txt"
+            text = f.read_bytes().decode("utf-8") if f.exists() else ""
+            eol = "\r\n" if "\r\n" in text else "\n"
+            extra = "".join(f"{u['package']}=={u['to']}{eol}" for u in missing)
+            f.write_bytes((text + ("" if not text or text.endswith("\n") else eol) + extra).encode("utf-8"))
+            if "requirements.txt" not in files:
+                files.append("requirements.txt")
+        self._record(run, "pin new versions", True, f"updated {', '.join(files) or 'nothing (already pinned)'}", t0)
+        run["changes"].append("Python: " + ", ".join(f"{u['package']} {u['from'] or '?'} -> {u['to']}" for u in upgrades)
+                              + (f" (pinned in {', '.join(files)})" if files else ""))
+
+    def _report(self, run: dict) -> None:
+        failed = [st["name"] for st in run["steps"] if not st["ok"]]
+        slog(f"dependency update: finished ({run['mode']}, {'ok' if run['ok'] else 'problems'}"
+             f"{'; failed: ' + ', '.join(failed) if failed else ''})")
+        if run["mode"] != "apply":
+            return
+        lines = [f"Requested by {run['requested_by'] or 'unknown'} via {run['source'] or 'unknown'}"
+                 + (f": {run['reason']}" if run.get("reason") else "")]
+        lines += [f"- {c}" for c in run["changes"]]
+        if failed:
+            lines.append("Failed steps: " + ", ".join(failed))
+        if run.get("error"):
+            lines.append(f"Error: {run['error']}")
+        if run["manual"]:
+            lines.append("Still needs a manual update:")
+            lines += [f"- {m}" for m in run["manual"][:10]]
+        if run["restarted"]:
+            lines.append("The bot and the dashboard were stopped for it and started again.")
+        alert("Dependency update finished" if run["ok"] else "Dependency update had problems",
+              "\n".join(lines), INFO_COLOR if run["ok"] else WARN_COLOR, False)
+
+
+# ---------------------------------------------------------------------------
 # Control API: Controller (thread-safe state shared with the HTTP thread)
 # ---------------------------------------------------------------------------
 
@@ -1079,11 +1766,14 @@ class Controller:
     """
 
     def __init__(self, services, *, cooldown: float = RESTART_COOLDOWN, secret: str = "",
-                 rotator: LogRotator | None = None) -> None:
+                 rotator: LogRotator | None = None, updater: DependencyUpdater | None = None) -> None:
         self.services = {s.name: s for s in services}
         self.rotator = rotator
         self._rotate_pending = False               # POST /rotate-logs queued, not yet applied
         self._rotate_accepted_at: float | None = None
+        self.updater = updater
+        self._update_pending = False               # POST /update-deps queued, not yet applied
+        self._update_accepted_at: float | None = None
         self.order = [s.name for s in services]
         self.cooldown = cooldown
         self.secret = secret
@@ -1117,6 +1807,7 @@ class Controller:
                 "skip_reason": None if running else s.skip_reason,
                 "next_start_at": None if running else s.next_start,
                 "restart_requested": s.requested is not None,
+                "held": s.hold,
             }
         with self._lock:
             self._snapshot = snap
@@ -1146,6 +1837,18 @@ class Controller:
                     slog(f"control: applying log rotation request failed: {type(e).__name__}: {e}")
                 with self._lock:
                     self._rotate_pending = False
+                continue
+            if req.get("kind") == "update":
+                try:
+                    if self.updater is not None and self.updater.run_async(
+                            req["mode"], requested_by=req["requested_by"], source=req["source"], reason=req["reason"]):
+                        applied.append("dependency-update")
+                    else:
+                        slog("control: dependency update request dropped: an update is already running")
+                except Exception as e:  # never let a request kill the loop
+                    slog(f"control: applying dependency update request failed: {type(e).__name__}: {e}")
+                with self._lock:
+                    self._update_pending = False
                 continue
             svc = self.services.get(req["name"])
             if svc is not None:
@@ -1189,6 +1892,7 @@ class Controller:
             },
             "services": out,
             "log_rotation": self._rotation_status(),
+            "dependency_update": self._update_status(),
         }
 
     def _rotation_status(self) -> dict | None:
@@ -1197,6 +1901,13 @@ class Controller:
         with self._lock:
             pending = self._rotate_pending
         return dict(self.rotator.status(), pending=pending)
+
+    def _update_status(self) -> dict | None:
+        if self.updater is None:
+            return None
+        with self._lock:
+            pending = self._update_pending
+        return dict(self.updater.status(), pending=pending)
 
     @staticmethod
     def _requester(body: dict) -> tuple[tuple[int, dict] | None, str, str, str | None]:
@@ -1239,6 +1950,35 @@ class Controller:
                      "message": "Log rotation queued; it starts within a second. The result appears in "
                                 "GET /status under log_rotation.last_run."}
 
+    def submit_update(self, body: dict, now: float | None = None) -> tuple[int, dict]:
+        """POST /update-deps {"mode": check|apply, requested_by, source, reason}: validate
+        and queue; the main loop starts the run (drain)."""
+        now = time.time() if now is None else now
+        err, by, source, reason = self._requester(body)
+        if err:
+            return err
+        mode = body.get("mode", "apply")
+        if mode not in DEPS_MODES:
+            return 400, {"error": "invalid_mode", "message": f"mode must be one of {', '.join(DEPS_MODES)}"}
+        if self.updater is None:
+            return 409, {"error": "not_managed", "message": "dependency updates are not enabled in this supervisor."}
+        with self._lock:
+            if self._update_pending or self.updater.is_running():
+                return 409, {"error": "update_in_progress", "message": "a dependency update is already running."}
+            last = self._update_accepted_at
+            if last is not None and now - last < DEPS_COOLDOWN:
+                retry = max(1, math.ceil(DEPS_COOLDOWN - (now - last)))
+                return 429, {"error": "cooldown", "retry_after_s": retry,
+                             "message": f"a dependency update was requested moments ago; try again in {retry}s."}
+            self._update_pending = True
+            self._update_accepted_at = now
+        self.requests.put({"kind": "update", "name": "dependency-update", "mode": mode, "requested_by": by,
+                           "source": source, "reason": reason, "not_before": now})
+        slog(f"control: accepted dependency {mode} (requested by {by} via {source}{f': {reason}' if reason else ''})")
+        return 202, {"queued": True, "mode": mode,
+                     "message": f"Dependency {mode} queued; it starts within a second. Progress and the result "
+                                "appear in GET /status under dependency_update."}
+
     def submit(self, body: dict, now: float | None = None) -> tuple[int, dict]:
         now = time.time() if now is None else now
         target = body.get("target")
@@ -1270,6 +2010,9 @@ class Controller:
                 if n in self._pending or snap.get("restart_requested"):
                     skipped.append({"name": n, "error": "restart_in_progress",
                                     "message": f"a restart of {n} is already in progress."})
+                elif snap.get("held"):
+                    skipped.append({"name": n, "error": "update_in_progress",
+                                    "message": f"{n} is stopped for a {snap['held']}; it starts again when that finishes."})
                 elif not snap.get("running") and snap.get("skip_reason") == "port in use":
                     port = getattr(self.services[n], "port", None)
                     skipped.append({"name": n, "error": "not_managed",
@@ -1312,7 +2055,7 @@ class Controller:
 # Control API: HTTP server (loopback, bearer auth, JSON only)
 # ---------------------------------------------------------------------------
 
-_ROUTES = {"/status": "GET", "/restart": "POST", "/logs": "GET", "/rotate-logs": "POST"}
+_ROUTES = {"/status": "GET", "/restart": "POST", "/logs": "GET", "/rotate-logs": "POST", "/update-deps": "POST"}
 
 
 class _Handler(BaseHTTPRequestHandler):
@@ -1428,7 +2171,8 @@ class _Handler(BaseHTTPRequestHandler):
                 if err:
                     self._send(*err)
                     return
-                code, payload = ctrl.submit_rotate(body) if path == "/rotate-logs" else ctrl.submit(body)
+                handler = {"/rotate-logs": ctrl.submit_rotate, "/update-deps": ctrl.submit_update}.get(path, ctrl.submit)
+                code, payload = handler(body)
                 headers = {"Retry-After": str(payload["retry_after_s"])} if code == 429 else None
                 self._send(code, payload, headers)
         except Exception as e:  # pragma: no cover - defensive
@@ -1626,13 +2370,16 @@ CLI_USAGE = """usage: supervisor.py <command>   (sv.bat <command> does the same,
   health                     probe the bot, the dashboard and the public site over HTTP
   restart <target> [reason]  target: bot|dashboard|tunnel|all (or b|d|t|a)
   rotate-logs [reason]       archive the logs now
+  update-deps [check|apply] [reason]
+                             audit dependencies (check, the default) or apply the safe fixes
+                             (stops the bot + dashboard for Python updates; `summary` shows the result)
   tail <service> [lines]     last output lines of bot|dashboard|tunnel (secrets scrubbed)
   follow <log>               live view of logs/supervisor/<log>.log (supervisor|bot|dashboard|tunnel);
                              works with the supervisor down; Ctrl+C stops
   pid                        print the running supervisor's pid"""
 
 CLI_ALIASES = {"s": "summary", "j": "status", "json": "status", "c": "health", "r": "restart",
-               "rotate": "rotate-logs", "o": "rotate-logs", "t": "tail", "f": "follow"}
+               "rotate": "rotate-logs", "o": "rotate-logs", "t": "tail", "f": "follow", "u": "update-deps"}
 CLI_TARGETS = {"b": "bot", "d": "dashboard", "dash": "dashboard", "t": "tunnel", "a": "all"}
 FOLLOW_LOGS = ("supervisor", "bot", "dashboard", "tunnel")
 
@@ -1669,7 +2416,9 @@ def _fmt_exit(reason: str) -> str:
 
 
 def _service_state(s: dict) -> str:
-    if s.get("restart_pending"):
+    if s.get("held") and not s.get("running"):
+        state = f"paused ({s['held']})"
+    elif s.get("restart_pending"):
         state = "restarting"
     elif s.get("running"):
         state = "running"
@@ -1721,6 +2470,18 @@ def format_summary(payload: dict) -> str:
         if rot.get("deferred"):
             extra += f"  deferred: {', '.join(map(str, rot['deferred']))}"
         out.append(f"log rotation: last {last_txt}, next {_fmt_when(rot.get('next_run_at'))}{extra}")
+    dep = payload.get("dependency_update")
+    if dep:
+        if dep.get("running") or dep.get("pending"):
+            out.append(f"dependency update: running ({dep.get('step') or 'starting'})")
+        last = dep.get("last_run")
+        if last:
+            out.append(f"dependency update: last {last.get('mode')} {_fmt_when(last.get('at'))} "
+                       f"({'ok' if last.get('ok') else 'problems'})")
+            out += [f"  {c}" for c in last.get("changes") or []]
+            out += [f"  manual: {m}" for m in last.get("manual") or []]
+            out += [f"  FAILED: {st.get('name')}: {st.get('detail')}"
+                    for st in last.get("steps") or [] if not st.get("ok")]
     return "\n".join(out)
 
 
@@ -1852,6 +2613,12 @@ def cli(argv: list[str]) -> int:
             code, payload = _cli_call("POST", "/rotate-logs", {
                 "requested_by": _cli_who(), "source": "cli", "reason": " ".join(argv[1:]).strip() or None,
             })
+        elif cmd == "update-deps":
+            explicit = len(argv) >= 2 and argv[1] in DEPS_MODES
+            code, payload = _cli_call("POST", "/update-deps", {
+                "mode": argv[1] if explicit else "check", "requested_by": _cli_who(), "source": "cli",
+                "reason": " ".join(argv[2:] if explicit else argv[1:]).strip() or None,
+            })
         elif cmd == "tail" and len(argv) >= 2:
             lines = argv[2] if len(argv) >= 3 and argv[2].isdigit() else "50"
             code, payload = _cli_call("GET", f"/logs?service={CLI_TARGETS.get(argv[1], argv[1])}&lines={lines}")
@@ -1893,7 +2660,9 @@ def main() -> int:
     rotator = LogRotator(services)
     for s in services:
         s.before_start = lambda name=s.name: rotator.before_start(name)
-    controller = Controller(services, cooldown=RESTART_COOLDOWN, secret=CONTROL_SECRET, rotator=rotator)
+    updater = DependencyUpdater(services)
+    controller = Controller(services, cooldown=RESTART_COOLDOWN, secret=CONTROL_SECRET, rotator=rotator,
+                            updater=updater)
     control = ControlServer(controller, CONTROL_SECRET, CONTROL_PORT)
     control_on = control.start()
 
@@ -1910,6 +2679,7 @@ def main() -> int:
             now = time.time()
             controller.drain(now)
             rotator.tick()
+            updater.tick(now)
             for s in services:
                 s.poll(now)
             controller.publish()

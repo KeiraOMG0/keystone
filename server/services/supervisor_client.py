@@ -12,6 +12,8 @@ services/supervisor_client.py; the two processes do not import each other.
   GET  /logs?service=&lines=     -> {"service", "lines": [...]}
   POST /rotate-logs {"requested_by", "source", "reason"}
                                  -> 202 {"queued": true, "message"} (result: /status log_rotation.last_run)
+  POST /update-deps {"mode", "requested_by", "source", "reason"}
+                                 -> 202 {"queued": true, "mode", "message"} (result: /status dependency_update)
 """
 
 from __future__ import annotations
@@ -90,4 +92,12 @@ async def rotate_logs(*, requested_by: str, source: str = "dashboard", reason: s
     and error mapping as request_restart; 409 rotation_in_progress, 429 cooldown."""
     return await _request(
         "POST", "/rotate-logs", json={"requested_by": requested_by, "source": source, "reason": reason}
+    )
+
+
+async def update_deps(*, mode: str, requested_by: str, source: str = "dashboard", reason: str | None = None) -> dict:
+    """Queue a dependency check or update (owner-only in the dashboard). 409
+    update_in_progress, 429 cooldown; the run itself is reported in /status."""
+    return await _request(
+        "POST", "/update-deps", json={"mode": mode, "requested_by": requested_by, "source": source, "reason": reason}
     )

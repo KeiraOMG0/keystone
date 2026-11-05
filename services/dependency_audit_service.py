@@ -203,8 +203,10 @@ def build_report_text(report: AuditReport, limit: int = 3800) -> tuple[str, str,
     for err in report.errors:
         lines.append(f"- Check failed: {err}")
     lines.append("")
-    lines.append("Fix: `venv\\Scripts\\pip install -U <package>` (pin it in requirements.txt), "
-                 "`npm audit fix` in the project, rebuild, then restart. Re-check with `!depaudit`.")
+    lines.append("Fix: Diagnostics > Services > Dependency updates > Update now (owner only; "
+                 "or `supervisor.py update-deps apply`): applies the safe fixes, rebuilds, tests, "
+                 "rolls back on failure and restarts what needs it. Major upgrades stay manual. "
+                 "Re-check with `!depaudit`.")
     text = "\n".join(lines)
     if len(text) > limit:
         text = text[: limit - 20] + "\n... (truncated)"

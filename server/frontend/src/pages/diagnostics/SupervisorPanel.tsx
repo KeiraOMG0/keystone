@@ -8,8 +8,10 @@ import {
   useSupervisorRotateLogs,
   useSupervisorStatus,
   type LogRotationRun,
+  type SupervisorStatusFull,
   type SupervisorStatusWithRotation,
 } from "@/api/supervisor"
+import { DependencyUpdatePanel } from "@/pages/diagnostics/DependencyUpdatePanel"
 import { ConfirmDialog } from "@/components/patterns/ConfirmDialog"
 import { EmptyState, ErrorState } from "@/components/patterns/states"
 import { Alert } from "@/components/ui/alert"
@@ -76,6 +78,7 @@ function rotationSummary(run: LogRotationRun): string {
 
 function stateOf(s: SupervisorService): { text: string; dot: string; tone: "success" | "warning" | "destructive" } {
   if (s.running) return { text: "Running", dot: "bg-success", tone: "success" }
+  if (s.held) return { text: `Paused for the ${s.held}; starts again when it finishes`, dot: "bg-warning", tone: "warning" }
   if (s.skip_reason === "port in use") return { text: "Not managed (port held by another process)", dot: "bg-warning", tone: "warning" }
   if (s.waiting_on_dependency) return { text: "Waiting for the bot's internal API", dot: "bg-warning", tone: "warning" }
   return {
@@ -98,7 +101,8 @@ function stateOf(s: SupervisorService): { text: string; dot: string; tone: "succ
  * everyone else), its confirm dialog and the log-rotation status line are not
  * rendered at all unless /api/me says is_owner (the __owner_only
  * pseudo-permission). Like the restart buttons it is disabled only while the
- * supervisor is unreachable, never by useBotOffline().
+ * supervisor is unreachable, never by useBotOffline(). Same for the
+ * "Dependency updates" section (DependencyUpdatePanel, supervisor v2.2+).
  */
 export function SupervisorPanel({ active }: { active: boolean }) {
   const { toast } = useToast()
@@ -333,7 +337,7 @@ export function SupervisorPanel({ active }: { active: boolean }) {
                       <span aria-hidden className={cn("size-2 rounded-full", st.dot)} />
                       {TITLE[s.name] ?? s.name}
                     </span>
-                    <Badge variant={st.tone}>{s.running ? "Running" : "Down"}</Badge>
+                    <Badge variant={st.tone}>{s.running ? "Running" : s.held ? "Paused" : "Down"}</Badge>
                   </div>
                   <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
                     <dt className="text-muted-foreground">State</dt>
@@ -388,6 +392,13 @@ export function SupervisorPanel({ active }: { active: boolean }) {
                 </pre>
               )}
             </div>
+          ) : null}
+          {isOwner ? (
+            <DependencyUpdatePanel
+              status={(data as SupervisorStatusFull).dependency_update}
+              reachable={!query.isError}
+              onRefetch={() => void query.refetch()}
+            />
           ) : null}
         </>
       ) : null}

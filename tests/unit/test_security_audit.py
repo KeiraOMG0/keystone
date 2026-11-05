@@ -98,7 +98,7 @@ def test_anonymous_request_is_rejected_everywhere(temp_db, method, path):
     r = client.request(method, url, json={}, headers={"Origin": ORIGIN})
     # 401 = needs a session; only the owner-only routes answer the hidden 404
     # (a wrong path would also 404, so 404 is accepted ONLY for those).
-    owner_only = path.startswith("/api/debug/") or path == "/api/supervisor/rotate-logs"
+    owner_only = path.startswith("/api/debug/") or path in ("/api/supervisor/rotate-logs", "/api/supervisor/update-deps")
     if owner_only:
         assert r.status_code == 404 and r.json() == {"error": "not_found"}, (method, path, r.status_code)
     else:
