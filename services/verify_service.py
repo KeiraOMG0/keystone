@@ -26,6 +26,25 @@ from core.placeholder_engine import RenderContext
 
 log = logging.getLogger(__name__)
 
+# The how-to-verify memo: posted automatically when a verify ticket opens
+# (services/ticket_service.py) and again on demand with `!welcome-verify` /
+# `!wv` (cogs/verify.py). Edit its wording on the dashboard Templates page.
+WELCOME_VERIFY_TEMPLATE_NAME = "welcome-verify"
+
+
+def welcome_verify_fallback(member) -> str:
+    """Plain memo used when the welcome-verify template is missing, empty or broken."""
+    return (
+        f"Hi {member.mention}! To get verified, post ONE of these here: a selfie holding a sign "
+        "saying \"GG HQ\" and your Discord username, screenshots showing you're verified in another "
+        "all-girls server, or a short voice memo with your name, age and where you're from."
+    )
+
+
+def welcome_verify_mentions(member) -> discord.AllowedMentions:
+    """The memo may ping the ticket opener and nobody else."""
+    return discord.AllowedMentions(everyone=False, roles=False, users=[member])
+
 
 class VerifyResult:
     """Outcome of verify_member(), enough for a caller to report status."""

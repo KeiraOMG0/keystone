@@ -13,6 +13,11 @@ looked up by name (config.VERIFY_TEMPLATE_NAME, default "verify") via
 message is sent instead so the command still works before staff configure
 one.
 
+!welcome-verify (alias !wv) re-posts the "welcome-verify" template (a short
+how-to-verify memo, also sent automatically when a verify ticket opens) inside
+an open verify ticket, pinging the opener; with no such template it sends a
+plain fallback memo. Same `verify_members` gate.
+
 The actual role-swap + messaging logic lives in
 services/verify_service.verify_member() (re-exported below) so it is shared
 by `!verify`, the ticket system's "Verify & Close" button (cogs/tickets.py)
@@ -35,6 +40,7 @@ from core.renderer import TemplateRenderer
 from database.repositories.audit_repo import AuditRepository
 from database.repositories.embed_repo import EmbedRepository
 from database.repositories.template_repo import TemplateRepository
+from database.repositories.ticket_repo import TicketRepository
 from database.repositories.version_repo import VersionRepository
 from services.audit_service import AuditService
 from services.template_service import TemplateService
@@ -54,6 +60,11 @@ _MENTION_RE = re.compile(r"<@!?(\d+)>")
 # profile Verify button); re-exported here so `from cogs.verify import
 # verify_member` keeps working.
 from services.verify_service import VerifyResult, verify_member  # noqa: E402,F401
+from services.verify_service import (  # noqa: E402
+    WELCOME_VERIFY_TEMPLATE_NAME,
+    welcome_verify_fallback,
+    welcome_verify_mentions,
+)
 
 
 class VerifyCog(commands.Cog, name="Verify"):
@@ -63,11 +74,13 @@ class VerifyCog(commands.Cog, name="Verify"):
         template_service: TemplateService,
         renderer: TemplateRenderer,
         audit: AuditService,
+        ticket_repo: TicketRepository,
     ) -> None:
         self.bot = bot
         self._templates = template_service
         self._renderer = renderer
         self._audit = audit
+        self._tickets = ticket_repo
 
     @commands.command(name="verify", hidden=True)
     async def verify_cmd(self, ctx: commands.Context, *, target: str = None) -> None:
@@ -106,6 +119,48 @@ class VerifyCog(commands.Cog, name="Verify"):
 
         await ctx.reply(f"Verified {member.mention} — {result.message_status}.")
 
+    @commands.command(name="welcome-verify", aliases=["wv"], hidden=True)
+    async def welcome_verify_cmd(self, ctx: commands.Context) -> None:
+        """Post the how-to-verify memo in this verify ticket, pinging its opener."""
+        if ctx.guild is None or not await self.bot.permission_service.has_permission(ctx.author, "verify_members"):
+            await ctx.reply("You don't have permission to use this command.")
+            return
+
+        ticket = await self._tickets.get_ticket_by_channel(ctx.channel.id)
+        panel = await self._tickets.get_panel(ticket["panel_id"]) if ticket else None
+        if not ticket or ticket["status"] != "open" or not panel or panel.get("purpose") != "verify":
+            await ctx.reply("Use this inside an open verify ticket.")
+            return
+
+        member = ctx.guild.get_member(int(ticket["opened_by"]))
+        if member is None:
+            await ctx.reply("The member who opened this ticket is no longer in the server.")
+            return
+
+        content, embeds = None, []
+        template_full = await self._templates.get_full(ctx.guild.id, WELCOME_VERIFY_TEMPLATE_NAME)
+        if template_full is not None:
+            rc = RenderContext(guild=ctx.guild, member=member, channel=ctx.channel, actor=ctx.author,
+                               ticket_number=ticket.get("ticket_number"))
+            try:
+                rendered = self._renderer.render_message(template_full, rc)
+                content, embeds = rendered.get("content") or None, rendered.get("embeds") or []
+            except Exception:
+                log.exception("welcome-verify: failed to render template '%s'", WELCOME_VERIFY_TEMPLATE_NAME)
+        if not content and not embeds:
+            content = welcome_verify_fallback(member)
+
+        try:
+            await ctx.send(content=content, embeds=embeds[:10], allowed_mentions=welcome_verify_mentions(member))
+        except discord.HTTPException as e:
+            await ctx.reply(f"Could not send the memo: {e}")
+            return
+        # Tidy the ticket: the memo replaces the staff command message.
+        try:
+            await ctx.message.delete()
+        except discord.HTTPException:
+            pass
+
 
 async def setup(bot: commands.Bot) -> None:
     if not hasattr(bot, "db") or bot.db is None:
@@ -121,4 +176,4 @@ async def setup(bot: commands.Bot) -> None:
     renderer = TemplateRenderer()
     audit = AuditService(audit_repo)
 
-    await bot.add_cog(VerifyCog(bot, template_service, renderer, audit))
+    await bot.add_cog(VerifyCog(bot, template_service, renderer, audit, TicketRepository(bot.db)))

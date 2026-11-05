@@ -502,6 +502,38 @@ class TicketService:
             # 023's docstring.
             await self._tickets.set_control_message_id(ticket_id, control_msg.id)
 
+        if is_verify_panel:
+            await self._post_verify_memo(guild, member, ticket_channel, ticket_number)
+
+    async def _post_verify_memo(
+        self,
+        guild: discord.Guild,
+        member: discord.Member,
+        ticket_channel: discord.TextChannel,
+        ticket_number: int,
+    ) -> None:
+        """Post the how-to-verify memo (the `welcome-verify` template, same as
+        `!welcome-verify`) under the verify ticket's welcome message. A failure
+        is logged and never blocks the ticket."""
+        from services.verify_service import (
+            WELCOME_VERIFY_TEMPLATE_NAME,
+            welcome_verify_fallback,
+            welcome_verify_mentions,
+        )
+        rendered = await self._render_lifecycle_template(
+            guild,
+            WELCOME_VERIFY_TEMPLATE_NAME,
+            member=member,
+            channel=ticket_channel,
+            ticket_number=ticket_number,
+        )
+        content, embeds = rendered if rendered is not None else (welcome_verify_fallback(member), [])
+        try:
+            await ticket_channel.send(content=content, embeds=embeds[:10],
+                                      allowed_mentions=welcome_verify_mentions(member))
+        except discord.HTTPException:
+            log.warning("ticket_service: could not post the verify memo in channel %s", ticket_channel.id)
+
     async def get_ticket(self, ticket_id: int) -> dict | None:
         return await self._tickets.get_ticket(ticket_id)
 

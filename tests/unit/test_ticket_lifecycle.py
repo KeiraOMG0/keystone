@@ -420,3 +420,66 @@ async def test_purge_loop_skips_when_setting_is_invalid():
     cog._ticket_archive_purge_days = AsyncMock(return_value=30)
     await TicketCog.purge_archived_tickets_loop.coro(cog)
     cog.ticket_service.purge_old_archived_tickets.assert_awaited_once_with(30)
+
+
+# ---------------------------------------------------------------------------
+# Verify memo on open
+# ---------------------------------------------------------------------------
+
+def _verify_repo():
+    repo = FakeTicketRepo()
+    repo.panel["purpose"] = "verify"
+    return repo
+
+
+async def test_verify_ticket_posts_the_memo_after_the_welcome():
+    import discord
+    templates = make_templates()
+    rows = {"welcome-verify": {"id": 15}}
+    templates.get_by_name = AsyncMock(side_effect=lambda gid, name: rows.get(name))
+    templates.get_full = AsyncMock(return_value={"name": "welcome-verify"})
+    renderer = MagicMock()
+    memo = discord.Embed(title="How to get verified")
+    renderer.render_message = MagicMock(return_value={"content": None, "embeds": [memo]})
+    svc = TicketService(_verify_repo(), templates, renderer, MagicMock())
+    guild = make_guild()
+    member = make_member(OPENER_ID)
+
+    channel, errors = await svc.open_ticket(PANEL_ID, guild, member)
+    assert errors == []
+    first, second = channel.send.await_args_list
+    assert "view" in first.kwargs  # welcome + Verify & Close buttons first
+    assert second.kwargs["embeds"] == [memo]
+    am = second.kwargs["allowed_mentions"]
+    assert am.everyone is False and am.roles is False and am.users == [member]
+    ctx = renderer.render_message.call_args.args[1]
+    assert ctx.member is member and ctx.ticket_number == 1
+
+
+async def test_verify_memo_falls_back_and_never_blocks_the_ticket():
+    import discord
+    svc = TicketService(_verify_repo(), make_templates(), MagicMock(), MagicMock())
+    guild = make_guild()
+    channel, errors = await svc.open_ticket(PANEL_ID, guild, make_member(OPENER_ID))
+    memo = channel.send.await_args_list[1]
+    assert memo.kwargs["content"].startswith(f"Hi <@{OPENER_ID}>!") and memo.kwargs["embeds"] == []
+
+    repo = _verify_repo()
+    svc = TicketService(repo, make_templates(), MagicMock(), MagicMock())
+    guild = make_guild()
+    orig = guild.create_text_channel.side_effect
+
+    async def failing_memo_channel(*a, **kw):
+        ch = await orig(*a, **kw)
+        ch.send = AsyncMock(side_effect=[MagicMock(id=1), discord.HTTPException(MagicMock(status=500), "boom")])
+        return ch
+
+    guild.create_text_channel.side_effect = failing_memo_channel
+    channel, errors = await svc.open_ticket(PANEL_ID, guild, make_member(OPENER_ID))
+    assert channel is not None and errors == [] and len(repo.tickets) == 1
+
+
+async def test_support_ticket_gets_no_verify_memo():
+    svc = make_service(FakeTicketRepo())
+    channel, _ = await svc.open_ticket(PANEL_ID, make_guild(), make_member(OPENER_ID))
+    assert channel.send.await_count == 1
