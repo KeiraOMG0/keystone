@@ -19,6 +19,11 @@ the lock is busy (see cogs/diagnostics_collector.py).
 If the crash comes back anyway, main.py has faulthandler enabled: the Python
 stack of every thread is written to stderr (logs/supervisor/bot.log) at the
 moment of the crash.
+
+It did come back with the lock in place (2026-10-30 20:25 and 10-31 03:48,
+same offset), and both faulthandler dumps ended in psutil.cpu_stats() with no
+other thread inside psutil. So the lock was not the fix: system_section no
+longer calls cpu_stats (ARCHITECTURE section 21). Keep the lock anyway.
 """
 from __future__ import annotations
 

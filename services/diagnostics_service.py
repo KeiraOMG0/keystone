@@ -716,7 +716,9 @@ def system_section(bot, db_path: str | None) -> dict[str, Any]:
             "freq_mhz": _nt(freq),
             "load_avg": _try(lambda: [round(x, 2) for x in psutil.getloadavg()]),
             "times": _nt(_try(psutil.cpu_times)),
-            "stats": _nt(_try(psutil.cpu_stats)),
+            # No psutil.cpu_stats(): it is the call that crashed the bot natively
+            # (0xC0000005 in _psutil_windows.pyd, ARCHITECTURE section 21), and
+            # nothing showed its numbers.
         },
         "temperatures": (
             {k: [{"label": t.label, "current": t.current} for t in v] for k, v in temps.items()}

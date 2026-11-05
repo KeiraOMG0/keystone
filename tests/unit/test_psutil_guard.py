@@ -67,6 +67,22 @@ def test_concurrent_calls_never_overlap(monkeypatch):
     assert peak == 1
 
 
+def test_system_section_never_calls_cpu_stats(monkeypatch):
+    # Both faulthandler dumps of the 0xC0000005 crash ended in psutil.cpu_stats().
+    called = []
+    fake = types.SimpleNamespace(
+        virtual_memory=lambda: _Reading(1), swap_memory=lambda: _Reading(1), cpu_freq=lambda: _Reading(1),
+        boot_time=lambda: time.time() - 10, cpu_count=lambda logical=True: 4, cpu_percent=lambda *a, **k: 1.0,
+        cpu_times=lambda: _Reading(1), cpu_stats=lambda: called.append(1) or _Reading(1),
+        disk_partitions=lambda all=False: [], disk_io_counters=lambda: _Reading(1), net_io_counters=lambda: _Reading(1),
+        disk_usage=lambda p: types.SimpleNamespace(total=1, free=1, percent=0.0),
+    )
+    monkeypatch.setattr(ds, "psutil", fake)
+    out = ds.system_section(types.SimpleNamespace(latency=0.05, shard_count=1, shard_id=None), None)
+    assert called == []
+    assert "stats" not in out["cpu"]
+
+
 def test_lock_is_reentrant():
     @psutil_guard.serialized
     def inner():
